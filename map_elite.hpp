@@ -68,19 +68,19 @@ SFERES_EA(MapElite, Ea)
 
 
     typedef boost::shared_ptr<Phen> phen_t;
-
     //typedef boost::multi_array<phen_t, 2> array_t;
 
 
     /*static const size_t res_x = Params::ea::res_x;
       static const size_t res_y = Params::ea::res_y;*/
 
+    //static const size_t behav_dim = Params::ea::behav_shape_size();
     static const size_t behav_dim = Params::ea::behav_dim;
 
-    typedef boost::array<long int, behav_dim> behav_index_t;
-    behav_index_t behav_shape;
     typedef boost::array<float, behav_dim> point_t;
     typedef boost::multi_array<phen_t, behav_dim> array_t;
+    typedef boost::array<typename array_t::index, behav_dim> behav_index_t;
+    behav_index_t behav_shape;
 
 
     MapElite()
@@ -94,9 +94,9 @@ SFERES_EA(MapElite, Ea)
             behav_shape[i] = Params::ea::behav_shape(i);
 
 
-        boost::array<typename array_t::index, behav_dim> shape = behav_shape;
-        _array.resize(shape);
-        _array_parents.resize(shape);
+        //boost::array<typename array_t::index, behav_dim> shape = behav_shape;
+        _array.resize(behav_shape);
+        _array_parents.resize(behav_shape);
 
         //boost::array<typename array_t::index, behav_dim> shape = {{ 2, 2 }}; //behav_shape
         //allocate space for _array and _array_parents
@@ -128,7 +128,13 @@ SFERES_EA(MapElite, Ea)
 
         //for_each(_array, a function call);
 
-        for(auto i = _array.data(); i < (_array.data() + _array.num_elements()); ++i)
+
+/*        ‘boost::multi_array<boost::shared_ptr<sferes::phen::Parameters<sferes::gen::EvoFloat<10, Params>, Rastrigin<Params>, Params> >, 2ul, std::allocator<boost::shared_ptr<sferes::phen::Parameters<sferes::gen::EvoFloat<10, Params>, Rastrigin<Params>, Params> > > >::element {aka boost::shared_ptr<sferes::phen::Parameters<sferes::gen::EvoFloat<10, Params>, Rastrigin<Params>, Params> >}’)
+        type ‘boost::none_t {aka int boost::detail::none_helper::*}’*/
+
+
+        //for(auto i = _array.data(); i < (_array.data() + _array.num_elements()); ++i)
+        for(const phen_t* i = _array.data(); i < (_array.data() + _array.num_elements()); ++i)
             if(*i)
                 this->_pop.push_back(*i);
 
@@ -198,14 +204,14 @@ SFERES_EA(MapElite, Ea)
             assert(behav_pos[i] < behav_shape[i]);
         }
 
-        boost::array<typename array_t::index, behav_dim> idx = behav_pos;
+        //boost::array<typename array_t::index, behav_dim> idx = behav_pos;
 
-        if (!_array(idx)
+        if (!_array(behav_pos)
                 || i1->fit().value() >
-                _array(idx)->fit().value())
+                _array(behav_pos)->fit().value())
         {
-            _array(idx) = i1;
-            _array_parents(idx) = parent;
+            _array(behav_pos) = i1;
+            _array_parents(behav_pos) = parent;
             return true;
         }
         return false;
@@ -256,5 +262,3 @@ SFERES_EA(MapElite, Ea)
 }
 }
 #endif
-
-

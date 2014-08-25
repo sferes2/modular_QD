@@ -46,7 +46,7 @@ namespace sferes
         FitMap() : _desc(Params::ea::behav_dim) { }
         const std::vector<float>& desc() const { return _desc; }
 
-        void set_desc(float x1, float x2)
+        /*void set_desc(float x1, float x2)
         {
           assert(x1 >= 0);
           assert(x2 >= 0);
@@ -55,10 +55,10 @@ namespace sferes
           assert(_desc.size() >= 2);
           _desc[0] = x1;
           _desc[1] = x2;
-        }
+        }*/
 
-	
-	void set_desc(std::vector<float> &x) ////void set_desc(boost::array<float,Params::ea::behav_dim> x)   
+
+    void set_desc(std::vector<float> &x) ////void set_desc(boost::array<float,Params::ea::behav_dim> x)
         {
           assert(x.size() == Params::ea::behav_dim);
           for(size_t i = 0; i < x.size(); ++i)

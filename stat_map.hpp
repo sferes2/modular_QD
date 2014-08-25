@@ -15,8 +15,7 @@ SFERES_STAT(Map, Stat)
     typedef boost::shared_ptr<Phen> phen_t;
     typedef boost::multi_array<phen_t, Params::ea::behav_dim> array_t;
     typedef boost::array<float, Params::ea::behav_dim> point_t;
-    typedef boost::array<long int, Params::ea::behav_dim> behav_index_t;
-
+    typedef boost::array<typename array_t::index, Params::ea::behav_dim> behav_index_t;
 
     size_t behav_dim;
     behav_index_t behav_shape;
@@ -47,7 +46,8 @@ SFERES_STAT(Map, Stat)
         assert(_xs == Params::ea::res_x);
         assert(_ys == Params::ea::res_y);*/
 
-        for(auto i = ea.archive().data(); i < (ea.archive().data() + ea.archive().num_elements()); ++i)
+        //for(auto phen_t* i = ea.archive().data(); i < (ea.archive().data() + ea.archive().num_elements()); ++i)
+        for(const phen_t* i = ea.archive().data(); i < (ea.archive().data() + ea.archive().num_elements()); ++i)
         {
             phen_t p = *i;
             _archive.push_back(p);
@@ -98,6 +98,10 @@ SFERES_STAT(Map, Stat)
         ar & BOOST_SERIALIZATION_NVP(_archive);
         ar & BOOST_SERIALIZATION_NVP(behav_dim);
         ar & BOOST_SERIALIZATION_NVP(behav_shape);
+        ar & BOOST_SERIALIZATION_NVP(behav_strides);
+        ar & BOOST_SERIALIZATION_NVP(behav_indexbase);
+
+        //ar & boost::serialization::make_nvp("behav_indexbase", behav_indexbase);
 
         /*ar & BOOST_SERIALIZATION_NVP(_xs);
         ar & BOOST_SERIALIZATION_NVP(_ys);*/
@@ -123,17 +127,18 @@ SFERES_STAT(Map, Stat)
                 + std::string(".dat");
         std::ofstream ofs(fname.c_str());
 
-        for(auto i = array.data(); i < (array.data() + array.num_elements()); ++i)
+        //for(auto i = array.data(); i < (array.data() + array.num_elements()); ++i)
+        for(const phen_t* i = array.data(); i < (array.data() + array.num_elements()); ++i)
         {
-            behav_index_t posinarray = ea.getindexarray(array, i);
-            boost::array<typename array_t::index, behav_dim> idx = posinarray;
+            behav_index_t idx = ea.getindexarray(array, i);
+            //boost::array<typename array_t::index, behav_dim> idx = posinarray;
 
             if (*i && p_array(idx))
             {
-                assert(array(posinarray)->fit().value() == (*i)->fit().value());
+                assert(array(idx)->fit().value() == (*i)->fit().value());
 
                 for(size_t dim = 0; dim < behav_dim; ++dim)
-                    ofs << posinarray[dim] / (float) behav_shape[dim] << " ";
+                    ofs << idx[dim] / (float) behav_shape[dim] << " ";
                 ofs << " " << p_array(idx)->fit().value();
 
                 point_t p = _get_point(p_array(idx)); behav_index_t posinparent;
@@ -177,7 +182,8 @@ SFERES_STAT(Map, Stat)
 
         std::ofstream ofs(fname.c_str());
 
-        for(auto i = array.data(); i < (array.data() + array.num_elements()); ++i)
+        size_t offset = 0;
+        for(const phen_t* i = array.data(); i < (array.data() + array.num_elements()); ++i)
         {
 
             //boost::array<typename array_t::index, behav_dim> idx = posinarray;
@@ -191,11 +197,13 @@ SFERES_STAT(Map, Stat)
                 //../modules/map_elite/stat_map.hpp:186:66: note: in template argument for type ‘long unsigned int’ ???
 
 
+                ofs << offset << "    ";
                 for(size_t dim = 0; dim < behav_dim; ++dim)
                     ofs << posinarray[dim] / (float) behav_shape[dim] << " ";
                 //ofs << " " << array(idx)->fit().value() << std::endl;
                 ofs << " " << array(posinarray)->fit().value() << std::endl;
             }
+	    ++offset;	
         }
 
         /*for (size_t i = 0; i < _xs; ++i)
