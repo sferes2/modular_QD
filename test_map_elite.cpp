@@ -81,38 +81,38 @@ using namespace sferes::gen::evo_float;
 
 struct Params
 {
-  struct ea
-  {
-    /*SFERES_CONST size_t res_x = 256;
+    struct ea
+    {
+        /*SFERES_CONST size_t res_x = 256;
       SFERES_CONST size_t res_y = 256;*/
 
-    SFERES_CONST size_t behav_dim = 2;
-    SFERES_ARRAY(size_t, behav_shape, 256, 256);
+        SFERES_CONST size_t behav_dim = 2;
+        SFERES_ARRAY(size_t, behav_shape, 256, 256);
 
-  };
-  struct pop
-  {
-    // number of initial random points
-    SFERES_CONST size_t init_size = 1000;
-    // size of a batch
-    SFERES_CONST size_t size = 2000;
-    SFERES_CONST size_t nb_gen = 5001;
-    SFERES_CONST size_t dump_period = 1000;
-  };
-  struct parameters
-  {
-    SFERES_CONST float min = -5;
-    SFERES_CONST float max = 5;
-  };
-  struct evo_float
-  {
-    SFERES_CONST float cross_rate = 0.25f;
-    SFERES_CONST float mutation_rate = 0.1f;
-    SFERES_CONST float eta_m = 10.0f;
-    SFERES_CONST float eta_c = 10.0f;
-    SFERES_CONST mutation_t mutation_type = polynomial;
-    SFERES_CONST cross_over_t cross_over_type = sbx;
-  };
+    };
+    struct pop
+    {
+        // number of initial random points
+        SFERES_CONST size_t init_size = 1000;
+        // size of a batch
+        SFERES_CONST size_t size = 2000;
+        SFERES_CONST size_t nb_gen = 5001;
+        SFERES_CONST size_t dump_period = 1000;
+    };
+    struct parameters
+    {
+        SFERES_CONST float min = -5;
+        SFERES_CONST float max = 5;
+    };
+    struct evo_float
+    {
+        SFERES_CONST float cross_rate = 0.25f;
+        SFERES_CONST float mutation_rate = 0.1f;
+        SFERES_CONST float eta_m = 10.0f;
+        SFERES_CONST float eta_c = 10.0f;
+        SFERES_CONST mutation_t mutation_type = polynomial;
+        SFERES_CONST cross_over_t cross_over_type = sbx;
+    };
 
 };
 
@@ -120,40 +120,42 @@ struct Params
 // Rastrigin
 FIT_MAP(Rastrigin)
 {
- public:
-  template<typename Indiv>
+    public:
+    template<typename Indiv>
     void eval(Indiv& ind)
-  {
-    float f = 10 * ind.size();
-    for (size_t i = 0; i < ind.size(); ++i)
-      f += ind.data(i) * ind.data(i) - 10 * cos(2 * M_PI * ind.data(i));
-    this->_value = -f;
+    {
+        float f = 10 * ind.size();
+        for (size_t i = 0; i < ind.size(); ++i)
+            f += ind.data(i) * ind.data(i) - 10 * cos(2 * M_PI * ind.data(i));
+        this->_value = -f;
 
-    std::vector<float> data = {ind.gen().data(0), ind.gen().data(1)};
-    //this->set_desc(ind.gen().data(0), ind.gen().data(1));
-    this->set_desc(data);
-  }
+        std::vector<float> data = {ind.gen().data(0), ind.gen().data(1)};
+        //this->set_desc(ind.gen().data(0), ind.gen().data(1));
+        this->set_desc(data);
+    }
+
+    bool dead() {return false;}
 };
 
 BOOST_AUTO_TEST_CASE(map_elite)
 {
-  using namespace sferes;
+    using namespace sferes;
 
-  typedef Rastrigin<Params> fit_t;
-  typedef gen::EvoFloat<10, Params> gen_t;
-  typedef phen::Parameters<gen_t, fit_t, Params> phen_t;
+    typedef Rastrigin<Params> fit_t;
+    typedef gen::EvoFloat<10, Params> gen_t;
+    typedef phen::Parameters<gen_t, fit_t, Params> phen_t;
 
-  typedef eval::Parallel<Params> eval_t;
-/*#ifndef NO_PARALLEL
+    typedef eval::Parallel<Params> eval_t;
+    /*#ifndef NO_PARALLEL
     typedef eval::Parallel<Params> eval_t;
 #else
     typedef eval::Eval<Params> eval_t;
 #endif*/
 
-  typedef boost::fusion::vector<stat::Map<phen_t, Params>, stat::BestFit<phen_t, Params> > stat_t;
-  typedef modif::Dummy<> modifier_t;
-  typedef ea::MapElite<phen_t, eval_t, stat_t, modifier_t, Params> ea_t;
+    typedef boost::fusion::vector<stat::Map<phen_t, Params>, stat::BestFit<phen_t, Params> > stat_t;
+    typedef modif::Dummy<> modifier_t;
+    typedef ea::MapElite<phen_t, eval_t, stat_t, modifier_t, Params> ea_t;
 
-  ea_t ea;
-  ea.run();
+    ea_t ea;
+    ea.run();
 }

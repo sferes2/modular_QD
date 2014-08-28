@@ -5,6 +5,8 @@
 #include <boost/multi_array.hpp>
 #include <sferes/stat/stat.hpp>
 
+#define MAP_WRITE_PARENTS
+
 namespace sferes
 {
 namespace stat
@@ -64,6 +66,7 @@ SFERES_STAT(Map, Stat)
         if (ea.gen() % Params::pop::dump_period == 0)
         {
             _write_archive(ea.archive(), std::string("archive_"), ea);
+            _write_progress(ea.archive(),std::string("progress_archive"), ea);
 #ifdef MAP_WRITE_PARENTS
             _write_parents(ea.archive(), ea.parents(), std::string("parents_"), ea);
 #endif
@@ -130,24 +133,26 @@ SFERES_STAT(Map, Stat)
         //for(auto i = array.data(); i < (array.data() + array.num_elements()); ++i)
         for(const phen_t* i = array.data(); i < (array.data() + array.num_elements()); ++i)
         {
-            behav_index_t idx = ea.getindexarray(array, i);
             //boost::array<typename array_t::index, behav_dim> idx = posinarray;
-
-            if (*i && p_array(idx))
+            if (*i)
             {
+                behav_index_t idx = ea.getindexarray(array, i);
                 assert(array(idx)->fit().value() == (*i)->fit().value());
-
-                for(size_t dim = 0; dim < behav_dim; ++dim)
-                    ofs << idx[dim] / (float) behav_shape[dim] << " ";
-                ofs << " " << p_array(idx)->fit().value();
-
-                point_t p = _get_point(p_array(idx)); behav_index_t posinparent;
-                for(size_t dim = 0; dim < behav_dim; ++dim)
+                if(p_array(idx))
                 {
-                    posinparent[dim] = round(p[dim] * behav_shape[dim]);
-                    ofs << posinparent[dim] / (float) behav_shape[dim] << " ";
+                    for(size_t dim = 0; dim < behav_dim; ++dim)
+                        ofs << idx[dim] / (float) behav_shape[dim] << " ";
+                    ofs << " " << p_array(idx)->fit().value() << " " ;
+
+                    point_t p = ea.get_point(p_array(idx));
+                      behav_index_t posinparent;
+                    for(size_t dim = 0; dim < behav_dim; ++dim)
+                    {
+                        posinparent[dim] = round(p[dim] * behav_shape[dim]);
+                        ofs << posinparent[dim] / (float) behav_shape[dim] << " ";
+                    }
+                    ofs << " " << array(idx)->fit().value() << std::endl;
                 }
-                ofs << " " << array(idx)->fit().value() << std::endl;
             }
         }
 
@@ -203,7 +208,7 @@ SFERES_STAT(Map, Stat)
                 //ofs << " " << array(idx)->fit().value() << std::endl;
                 ofs << " " << array(posinarray)->fit().value() << std::endl;
             }
-	    ++offset;	
+            ++offset;
         }
 
         /*for (size_t i = 0; i < _xs; ++i)
@@ -215,6 +220,55 @@ SFERES_STAT(Map, Stat)
                         << " " << array[i][j]->fit().value()
                         << std::endl;
                 }*/
+    }
+
+
+    template<typename EA>
+    void _write_progress(const array_t& array,
+                         const std::string& prefix,
+                         const EA& ea) const
+    {
+        std::cout << "writing..." << prefix << std::endl;
+        std::string fname = ea.res_dir() + "/"
+                + prefix
+                + std::string(".dat");
+
+        std::ofstream ofs(fname.c_str(), std::ofstream::out | std::ofstream::app);
+
+        size_t archive_size = 0;
+        float archive_mean = 0.0f;
+        float archive_max = 0.0f;
+        float mean_dist_center = 0.0f;
+
+        for(const phen_t* i = array.data(); i < (array.data() + array.num_elements()); ++i)
+        {
+            if(*i)
+            {
+                phen_t p = *i;
+                archive_size++;
+                archive_mean += p->fit().value();
+
+                if(archive_max < p->fit().value())
+                    archive_max = p->fit().value();
+
+                float dist = 0.0f;
+                for(size_t i = 0; i < Params::ea::behav_shape_size(); ++i)
+                {
+                    assert(p->fit().desc()[i] >= 0.0f && p->fit().desc()[i] <= 1.0f);
+
+                    float diff = p->fit().desc()[i] -
+                            (float)round(p->fit().desc()[i] * (float)(Params::ea::behav_shape(i)-1)) / (float)(Params::ea::behav_shape(i) - 1);
+
+                    dist += diff * diff;
+                }
+                mean_dist_center+=sqrtf(dist);
+            }
+        }
+
+        archive_mean /= archive_size;
+        mean_dist_center /= archive_size;
+
+        ofs << ea.gen() << " " << archive_size << " " << archive_mean << " " << archive_max << " " << mean_dist_center << std::endl;
     }
 
 

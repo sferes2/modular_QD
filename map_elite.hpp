@@ -129,7 +129,7 @@ SFERES_EA(MapElite, Ea)
         //for_each(_array, a function call);
 
 
-/*        ‘boost::multi_array<boost::shared_ptr<sferes::phen::Parameters<sferes::gen::EvoFloat<10, Params>, Rastrigin<Params>, Params> >, 2ul, std::allocator<boost::shared_ptr<sferes::phen::Parameters<sferes::gen::EvoFloat<10, Params>, Rastrigin<Params>, Params> > > >::element {aka boost::shared_ptr<sferes::phen::Parameters<sferes::gen::EvoFloat<10, Params>, Rastrigin<Params>, Params> >}’)
+        /*        ‘boost::multi_array<boost::shared_ptr<sferes::phen::Parameters<sferes::gen::EvoFloat<10, Params>, Rastrigin<Params>, Params> >, 2ul, std::allocator<boost::shared_ptr<sferes::phen::Parameters<sferes::gen::EvoFloat<10, Params>, Rastrigin<Params>, Params> > > >::element {aka boost::shared_ptr<sferes::phen::Parameters<sferes::gen::EvoFloat<10, Params>, Rastrigin<Params>, Params> >}’)
         type ‘boost::none_t {aka int boost::detail::none_helper::*}’*/
 
 
@@ -187,6 +187,12 @@ SFERES_EA(MapElite, Ea)
     const array_t& archive() const { return _array; }
     const array_t& parents() const { return _array_parents; }
 
+    template<typename I>
+    point_t get_point(const I& indiv) const
+    {
+            return _get_point(indiv);
+    }
+
     protected:
     array_t _array;
     array_t _prev_array;
@@ -194,6 +200,9 @@ SFERES_EA(MapElite, Ea)
 
     bool _add_to_archive(indiv_t i1, indiv_t parent)
     {
+        if(i1->fit().dead())
+            return false;
+
         point_t p = _get_point(i1);
 
         behav_index_t behav_pos;
@@ -206,9 +215,13 @@ SFERES_EA(MapElite, Ea)
 
         //boost::array<typename array_t::index, behav_dim> idx = behav_pos;
 
-        if (!_array(behav_pos)
+        /*if (!_array(behav_pos)
                 || i1->fit().value() >
-                _array(behav_pos)->fit().value())
+                _array(behav_pos)->fit().value())*/
+        float epsilon = 0.05;
+        if (!_array(behav_pos)
+                || (i1->fit().value() - _array(behav_pos)->fit().value()) > epsilon
+                || (fabs(i1->fit().value() - _array(behav_pos)->fit().value()) <= epsilon && _dist_center(i1) < _dist_center(_array(behav_pos))))
         {
             _array(behav_pos) = i1;
             _array_parents(behav_pos) = parent;
@@ -237,7 +250,20 @@ SFERES_EA(MapElite, Ea)
 
 
     template<typename I>
-    point_t _get_point(const I& indiv)
+    float _dist_center(const I& indiv)
+    {
+        /* Returns distance to center of behavior descriptor cell */
+        float dist = 0.0;
+        point_t p = _get_point(indiv);
+        for(size_t i = 0; i < Params::ea::behav_shape_size(); ++i)
+            dist += pow(p[i] - (float)round(p[i] * (float)(behav_shape[i] - 1))/(float)(behav_shape[i] - 1), 2);
+
+        dist=sqrt(dist);
+        return dist;
+    }
+
+    template<typename I>
+    point_t _get_point(const I& indiv) const
     {
         point_t p;
         for(size_t i = 0; i < Params::ea::behav_shape_size(); ++i)
