@@ -36,27 +36,25 @@
 
 #define FIT_MAP(Name) SFERES_FITNESS(Name, sferes::fit::FitMap)
 
-namespace sferes
-{
-  namespace fit
-  {
-    SFERES_FITNESS(FitMap, sferes::fit::Fitness)
-    {
-      public:
-        FitMap() : _desc(2) { }
-        const std::vector<float>& desc() const { return _desc; }
-        void set_desc(float x1, float x2)
-        {
-          assert(x1 >= 0);
-          assert(x2 >= 0);
-          assert(x1 <= 1);
-          assert(x2 <= 1);
-          assert(_desc.size() >= 2);
-          _desc[0] = x1;
-          _desc[1] = x2;
-        }
-      protected:
-        std::vector<float> _desc;
+namespace sferes {
+  namespace fit {
+    SFERES_FITNESS(FitMap, sferes::fit::Fitness) {
+    public:
+      FitMap() : _desc(2) { }
+      const std::vector<float>& desc() const {
+        return _desc;
+      }
+      void set_desc(float x1, float x2) {
+        assert(x1 >= 0);
+        assert(x2 >= 0);
+        assert(x1 <= 1);
+        assert(x2 <= 1);
+        assert(_desc.size() >= 2);
+        _desc[0] = x1;
+        _desc[1] = x2;
+      }
+    protected:
+      std::vector<float> _desc;
     };
   }
 }

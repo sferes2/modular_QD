@@ -50,14 +50,11 @@
 #include <sferes/fit/fitness.hpp>
 
 
-namespace sferes
-{
-  namespace ea
-  {
+namespace sferes {
+  namespace ea {
 
     // Main class
-    SFERES_EA(MapElite, Ea)
-    {
+    SFERES_EA(MapElite, Ea) {
     public:
       typedef boost::shared_ptr<Phen> indiv_t;
       typedef typename std::vector<indiv_t> pop_t;
@@ -70,103 +67,98 @@ namespace sferes
       static const size_t res_x = Params::ea::res_x;
       static const size_t res_y = Params::ea::res_y;
 
-      MapElite() : 
-	_array(boost::extents[res_x][res_y]), 
-	_array_parents(boost::extents[res_x][res_y])
-	  {
-	  }
-
-      void random_pop()
-      {
-	parallel::init();
-	this->_pop.resize(Params::pop::init_size);
-	BOOST_FOREACH(boost::shared_ptr<Phen>&indiv, this->_pop)
-          {
-            indiv = boost::shared_ptr<Phen>(new Phen());
-            indiv->random();
-          }
-	this->_eval.eval(this->_pop, 0, this->_pop.size());
-	BOOST_FOREACH(boost::shared_ptr<Phen>&indiv, this->_pop)
-          _add_to_archive(indiv, indiv);
+      MapElite() :
+        _array(boost::extents[res_x][res_y]),
+        _array_parents(boost::extents[res_x][res_y]) {
       }
 
-      void epoch()
-      {
-	this->_pop.clear();
-	for (size_t i = 0; i < res_x; ++i)
-	  for (size_t j = 0; j < res_y; ++j)
-	    if (_array[i][j])
-	      this->_pop.push_back(_array[i][j]);
-
-	pop_t ptmp, p_parents;
-	for (size_t i = 0; i < Params::pop::size; ++i)
-          {
-            indiv_t p1 = _selection(this->_pop);
-            indiv_t p2 = _selection(this->_pop);
-            boost::shared_ptr<Phen> i1, i2;
-            p1->cross(p2, i1, i2);
-            i1->mutate();
-            i2->mutate();
-            i1->develop();
-            i2->develop();
-            ptmp.push_back(i1);
-            ptmp.push_back(i2);
-	    p_parents.push_back(p1);
-	    p_parents.push_back(p2);
-          }
-	this->_eval.eval(ptmp, 0, ptmp.size());
-
- 	assert(ptmp.size() == p_parents.size());
- 	for (size_t i = 0; i < ptmp.size(); ++i)
-	  _add_to_archive(ptmp[i], p_parents[i]);
+      void random_pop() {
+        parallel::init();
+        this->_pop.resize(Params::pop::init_size);
+        BOOST_FOREACH(boost::shared_ptr<Phen>&indiv, this->_pop) {
+          indiv = boost::shared_ptr<Phen>(new Phen());
+          indiv->random();
+        }
+        this->_eval_pop(this->_pop, 0, this->_pop.size());
+        BOOST_FOREACH(boost::shared_ptr<Phen>&indiv, this->_pop)
+        _add_to_archive(indiv, indiv);
       }
 
-      const array_t& archive() const { return _array; }
-      const array_t& parents() const { return _array_parents; }
+      void epoch() {
+        this->_pop.clear();
+        for (size_t i = 0; i < res_x; ++i)
+          for (size_t j = 0; j < res_y; ++j)
+            if (_array[i][j])
+              this->_pop.push_back(_array[i][j]);
+
+        pop_t ptmp, p_parents;
+        for (size_t i = 0; i < Params::pop::size / 2; ++i) {
+          indiv_t p1 = _selection(this->_pop);
+          indiv_t p2 = _selection(this->_pop);
+          boost::shared_ptr<Phen> i1, i2;
+          p1->cross(p2, i1, i2);
+          i1->mutate();
+          i2->mutate();
+          i1->develop();
+          i2->develop();
+          ptmp.push_back(i1);
+          ptmp.push_back(i2);
+          p_parents.push_back(p1);
+          p_parents.push_back(p2);
+        }
+        this->_eval_pop(ptmp, 0, ptmp.size());
+
+        assert(ptmp.size() == p_parents.size());
+        for (size_t i = 0; i < ptmp.size(); ++i)
+          _add_to_archive(ptmp[i], p_parents[i]);
+      }
+
+      const array_t& archive() const {
+        return _array;
+      }
+      const array_t& parents() const {
+        return _array_parents;
+      }
 
     protected:
       array_t _array;
       array_t _prev_array;
       array_t _array_parents;
 
-      bool _add_to_archive(indiv_t i1, indiv_t parent)
-      {
-	point_t p = _get_point(i1);
-	size_t x = round(p[0] * res_x);
-	size_t y = round(p[1] * res_y);
-	x = std::min(x, res_x - 1);
-	y = std::min(y, res_y - 1);
-	assert(x < res_x);
-	assert(y < res_y);
+      bool _add_to_archive(indiv_t i1, indiv_t parent) {
+        point_t p = _get_point(i1);
+        size_t x = round(p[0] * res_x);
+        size_t y = round(p[1] * res_y);
+        x = std::min(x, res_x - 1);
+        y = std::min(y, res_y - 1);
+        assert(x < res_x);
+        assert(y < res_y);
 
-	if (!_array[x][y]
-	    || i1->fit().value() >
-	    _array[x][y]->fit().value())
-          {
-            _array[x][y] = i1;
-	    _array_parents[x][y] = parent;
-            return true;
-          }
-	return false;
+        if (!_array[x][y]
+            || i1->fit().value() >
+            _array[x][y]->fit().value()) {
+          _array[x][y] = i1;
+          _array_parents[x][y] = parent;
+          return true;
+        }
+        return false;
       }
-      
+
 
       template<typename I>
-        point_t _get_point(const I& indiv)
-      {
-	point_t p;
-	p[0] =
-	  std::min(1.0f, indiv->fit().desc()[0]);
-	p[1] =
-	  std::min(1.0f, indiv->fit().desc()[1]);
+      point_t _get_point(const I& indiv) {
+        point_t p;
+        p[0] =
+          std::min(1.0f, indiv->fit().desc()[0]);
+        p[1] =
+          std::min(1.0f, indiv->fit().desc()[1]);
 
-	return p;
+        return p;
       }
 
-      indiv_t _selection(const pop_t& pop)
-      {
-	int x1 = misc::rand< int > (0, pop.size());
-	return pop[x1];
+      indiv_t _selection(const pop_t& pop) {
+        int x1 = misc::rand< int > (0, pop.size());
+        return pop[x1];
       }
 
 
@@ -174,5 +166,3 @@ namespace sferes
   }
 }
 #endif
-
-

@@ -4,13 +4,13 @@
 //|
 //| This software is a computer program whose purpose is to facilitate
 //| experiments in evolutionary computation and evolutionary robotics.
-//| 
+//|
 //| This software is governed by the CeCILL license under French law
 //| and abiding by the rules of distribution of free software.  You
 //| can use, modify and/ or redistribute the software under the terms
 //| of the CeCILL license as circulated by CEA, CNRS and INRIA at the
 //| following URL "http://www.cecill.info".
-//| 
+//|
 //| As a counterpart to the access to the source code and rights to
 //| copy, modify and redistribute granted by the license, users are
 //| provided only with a limited warranty and the software's author,
@@ -32,7 +32,7 @@
 //| The fact that you are presently reading this means that you have
 //| had knowledge of the CeCILL license and that you accept its terms.
 
-#define BOOST_TEST_DYN_LINK 
+#define BOOST_TEST_DYN_LINK
 #define BOOST_TEST_MODULE map_elite
 
 #include <iostream>
@@ -54,29 +54,24 @@
 using namespace sferes::gen::evo_float;
 
 
-struct Params
-{
-  struct ea
-  {
+struct Params {
+  struct ea {
     SFERES_CONST size_t res_x = 256;
     SFERES_CONST size_t res_y = 256;
   };
-  struct pop
-  {
+  struct pop {
     // number of initial random points
     SFERES_CONST size_t init_size = 1000;
     // size of a batch
-    SFERES_CONST size_t size = 2000;    
+    SFERES_CONST size_t size = 2000;
     SFERES_CONST size_t nb_gen = 5001;
     SFERES_CONST size_t dump_period = 1000;
   };
-  struct parameters
-  {
+  struct parameters {
     SFERES_CONST float min = -5;
     SFERES_CONST float max = 5;
   };
-  struct evo_float
-  {
+  struct evo_float {
     SFERES_CONST float cross_rate = 0.25f;
     SFERES_CONST float mutation_rate = 0.1f;
     SFERES_CONST float eta_m = 10.0f;
@@ -89,12 +84,10 @@ struct Params
 
 
 // Rastrigin
-FIT_MAP(Rastrigin)
-{
- public:
+FIT_MAP(Rastrigin) {
+public:
   template<typename Indiv>
-    void eval(Indiv& ind)
-  {
+  void eval(Indiv& ind) {
     float f = 10 * ind.size();
     for (size_t i = 0; i < ind.size(); ++i)
       f += ind.data(i) * ind.data(i) - 10 * cos(2 * M_PI * ind.data(i));
@@ -103,8 +96,7 @@ FIT_MAP(Rastrigin)
   }
 };
 
-BOOST_AUTO_TEST_CASE(map_elite)
-{
+BOOST_AUTO_TEST_CASE(map_elite) {
   using namespace sferes;
 
   typedef Rastrigin<Params> fit_t;
@@ -116,9 +108,9 @@ BOOST_AUTO_TEST_CASE(map_elite)
   typedef ea::MapElite<phen_t, eval_t, stat_t, modifier_t, Params> ea_t;
 
   ea_t ea;
-    
+
   ea.run();
 
 }
 
- 
+
