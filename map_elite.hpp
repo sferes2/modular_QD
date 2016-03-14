@@ -49,6 +49,8 @@
 #include <sferes/ea/ea.hpp>
 #include <sferes/fit/fitness.hpp>
 
+#include "selector.hpp"
+#include "aggregator.hpp"
 
 namespace sferes
 {
@@ -56,8 +58,10 @@ namespace ea
 {
 
 // Main class
-SFERES_EA(MapElite, Ea)
-{
+// extended version of SFERES_EA with Select and Aggreg
+  template<typename Phen, typename Eval, typename Stat, typename FitModifier, typename Select, typename Aggreg , typename Params, typename Exact = stc::Itself>
+  class MapElite : public ea::Ea < Phen, Eval, Stat, FitModifier, Params,typename stc::FindExact<MapElite<Phen, Eval, Stat, FitModifier,Select, Aggreg , Params, Exact>, Exact>::ret >
+  {
     public:
     typedef boost::shared_ptr<Phen> indiv_t;
     typedef typename std::vector<indiv_t> pop_t;
@@ -76,15 +80,11 @@ SFERES_EA(MapElite, Ea)
 
     //static const size_t behav_dim = Params::ea::behav_shape_size();
     static const size_t behav_dim = Params::ea::behav_dim;
-
     typedef boost::array<float, behav_dim> point_t;
-    typedef boost::multi_array<phen_t, behav_dim> array_t;
-    typedef boost::array<typename array_t::index, behav_dim> behav_index_t;
-    behav_index_t behav_shape;
 
 
-    MapElite()
-    {
+    MapElite(){}
+    /*    {
         // - my_type my_name(size_t i)
         // - size_t my_name_size()
 
@@ -100,7 +100,7 @@ SFERES_EA(MapElite, Ea)
 
         //boost::array<typename array_t::index, behav_dim> shape = {{ 2, 2 }}; //behav_shape
         //allocate space for _array and _array_parents
-    }
+	}*/
 
     /*MapElite() :
     _array(boost::extents[res_x][res_y]),
@@ -117,37 +117,21 @@ SFERES_EA(MapElite, Ea)
             indiv = boost::shared_ptr<Phen>(new Phen());
             indiv->random();
         }
-        this->_eval.eval(this->_pop, 0, this->_pop.size());
+        this->_eval_pop(this->_pop, 0, this->_pop.size());
         BOOST_FOREACH(boost::shared_ptr<Phen>&indiv, this->_pop)
-                _add_to_archive(indiv, indiv);
+                _aggreg.add_to_archive(indiv, indiv);
     }
 
     void epoch()
     {
         this->_pop.clear();
-
-        //for_each(_array, a function call);
-
-
-        /*        ‘boost::multi_array<boost::shared_ptr<sferes::phen::Parameters<sferes::gen::EvoFloat<10, Params>, Rastrigin<Params>, Params> >, 2ul, std::allocator<boost::shared_ptr<sferes::phen::Parameters<sferes::gen::EvoFloat<10, Params>, Rastrigin<Params>, Params> > > >::element {aka boost::shared_ptr<sferes::phen::Parameters<sferes::gen::EvoFloat<10, Params>, Rastrigin<Params>, Params> >}’)
-        type ‘boost::none_t {aka int boost::detail::none_helper::*}’*/
-
-
-        //for(auto i = _array.data(); i < (_array.data() + _array.num_elements()); ++i)
-        for(const phen_t* i = _array.data(); i < (_array.data() + _array.num_elements()); ++i)
-            if(*i)
-                this->_pop.push_back(*i);
-
-        /*for (size_t i = 0; i < res_x; ++i)
-            for (size_t j = 0; j < res_y; ++j)
-                if (_array[i][j])
-                    this->_pop.push_back(_array[i][j]);*/
+	this->_pop=_aggreg.get_full_content();
 
         pop_t ptmp, p_parents;
-        for (size_t i = 0; i < Params::pop::size; ++i)
+        for (size_t i = 0; i < Params::pop::size/2; ++i)
         {
-            indiv_t p1 = _selection(this->_pop);
-            indiv_t p2 = _selection(this->_pop);
+            indiv_t p1 = _select(this->_pop);
+            indiv_t p2 = _select(this->_pop);
             boost::shared_ptr<Phen> i1, i2;
             p1->cross(p2, i1, i2);
             i1->mutate();
@@ -159,129 +143,27 @@ SFERES_EA(MapElite, Ea)
             p_parents.push_back(p1);
             p_parents.push_back(p2);
         }
-        this->_eval.eval(ptmp, 0, ptmp.size());
+        this->_eval_pop(ptmp, 0, ptmp.size());
 
         assert(ptmp.size() == p_parents.size());
         for (size_t i = 0; i < ptmp.size(); ++i)
-            _add_to_archive(ptmp[i], p_parents[i]);
+            _aggreg.add_to_archive(ptmp[i], p_parents[i]);
     }
 
 
-    long int getindex(const array_t & m, const phen_t* requestedElement, const unsigned short int direction) const
-    {
-        int offset = requestedElement - m.origin();
-        return (offset / m.strides()[direction] % m.shape()[direction] +  m.index_bases()[direction]);
-    }
 
-    behav_index_t getindexarray(const array_t & m, const phen_t* requestedElement ) const
-    {
-        behav_index_t _index;
-        for (unsigned int dir = 0; dir < behav_dim; dir++ )
-        {
-            _index[dir] = getindex( m, requestedElement, dir );
-        }
-
-        return _index;
-    }
-
-    const array_t& archive() const { return _array; }
-    const array_t& parents() const { return _array_parents; }
-
-    template<typename I>
+        template<typename I>
     point_t get_point(const I& indiv) const
     {
-            return _get_point(indiv);
+            return _aggreg.get_point(indiv);
     }
 
+    const Aggreg&  aggreg()const {return _aggreg;}
     protected:
-    array_t _array;
-    array_t _prev_array;
-    array_t _array_parents;
-
-    bool _add_to_archive(indiv_t i1, indiv_t parent)
-    {
-        if(i1->fit().dead())
-            return false;
-
-        point_t p = _get_point(i1);
-
-        behav_index_t behav_pos;
-        for(size_t i = 0; i < Params::ea::behav_shape_size(); ++i)
-        {
-            behav_pos[i] = round(p[i] * behav_shape[i]);
-            behav_pos[i] = std::min(behav_pos[i], behav_shape[i] - 1);
-            assert(behav_pos[i] < behav_shape[i]);
-        }
-
-        //boost::array<typename array_t::index, behav_dim> idx = behav_pos;
-
-        /*if (!_array(behav_pos)
-                || i1->fit().value() >
-                _array(behav_pos)->fit().value())*/
-        float epsilon = 0.05;
-        if (!_array(behav_pos)
-                || (i1->fit().value() - _array(behav_pos)->fit().value()) > epsilon
-                || (fabs(i1->fit().value() - _array(behav_pos)->fit().value()) <= epsilon && _dist_center(i1) < _dist_center(_array(behav_pos))))
-        {
-            _array(behav_pos) = i1;
-            _array_parents(behav_pos) = parent;
-            return true;
-        }
-        return false;
-
-
-        /*size_t x = round(p[0] * res_x);
-        size_t y = round(p[1] * res_y);
-        x = std::min(x, res_x - 1);
-        y = std::min(y, res_y - 1);
-        assert(x < res_x);
-        assert(y < res_y);
-
-        if (!_array[x][y]
-                || i1->fit().value() >
-                _array[x][y]->fit().value())
-        {
-            _array[x][y] = i1;
-            _array_parents[x][y] = parent;
-            return true;
-        }
-        return false;*/
-    }
-
-
-    template<typename I>
-    float _dist_center(const I& indiv)
-    {
-        /* Returns distance to center of behavior descriptor cell */
-        float dist = 0.0;
-        point_t p = _get_point(indiv);
-        for(size_t i = 0; i < Params::ea::behav_shape_size(); ++i)
-            dist += pow(p[i] - (float)round(p[i] * (float)(behav_shape[i] - 1))/(float)(behav_shape[i] - 1), 2);
-
-        dist=sqrt(dist);
-        return dist;
-    }
-
-    template<typename I>
-    point_t _get_point(const I& indiv) const
-    {
-        point_t p;
-        for(size_t i = 0; i < Params::ea::behav_shape_size(); ++i)
-            p[i] = std::min(1.0f, indiv->fit().desc()[i]);
-
-        /*p[0] =
-                std::min(1.0f, indiv->fit().desc()[0]);
-        p[1] =
-                std::min(1.0f, indiv->fit().desc()[1]);*/
-
-        return p;
-    }
-
-    indiv_t _selection(const pop_t& pop)
-    {
-        int x1 = misc::rand< int > (0, pop.size());
-        return pop[x1];
-    }
+    
+    Select _select;
+    Aggreg _aggreg;
+    
 
 
 };
