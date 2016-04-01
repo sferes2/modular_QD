@@ -52,6 +52,7 @@
 #include "map_elite.hpp"
 #include "fit_map.hpp"
 #include "stat_map.hpp"
+#include "stat_archive.hpp"
 #include "stat_selection.hpp"
 
 
@@ -82,6 +83,8 @@ struct Params
 
   struct nov{
     SFERES_CONST size_t deep=5;
+    SFERES_CONST size_t k=15;
+    
   };
     struct ea
     {
@@ -159,21 +162,36 @@ int main()
 #endif*/
 
     //    typedef boost::fusion::vector<stat::Map<phen_t, Params>, stat::BestFit<phen_t, Params>,stat::Selection<phen_t,Params> > stat_t;
-    typedef boost::fusion::vector<stat::Map<phen_t, Params>, stat::BestFit<phen_t, Params> > stat_t;
+    //
+
     typedef modif::Dummy<> modifier_t;
 
+#ifdef GRID
+    typedef aggregator::Map<phen_t, Params> aggreg_t;
+    typedef boost::fusion::vector<stat::Map<phen_t, Params>, stat::BestFit<phen_t, Params> > stat_t;
+#endif
+#ifdef ARCHIVE
+    typedef aggregator::Archive<phen_t, Params> aggreg_t;
+    typedef boost::fusion::vector<stat::Archive<phen_t, Params> > stat_t;
+#endif
+
+
+
 #ifdef RANDOM
-    typedef ea::MapElite<phen_t, eval_t, stat_t, modifier_t, selector::Random<phen_t>, aggregator::Map<phen_t, Params>, Params> ea_t;
+    typedef selector::Random<phen_t> select_t;
 #endif
 #ifdef FITNESS
-    typedef ea::MapElite<phen_t, eval_t, stat_t, modifier_t, selector::ScoreProportionate<phen_t,selector::getFitness>, aggregator::Map<phen_t, Params>, Params> ea_t;
+    typedef selector::ScoreProportionate<phen_t,selector::getFitness> select_t;
 #endif
 #ifdef NOVELTY
-    typedef ea::MapElite<phen_t, eval_t, stat_t, modifier_t, selector::ScoreProportionate<phen_t,selector::getNovelty>, aggregator::Map<phen_t, Params>, Params> ea_t;
+    typedef selector::ScoreProportionate<phen_t,selector::getNovelty> select_t;
 #endif
 #ifdef CURIOSITY
-    typedef ea::MapElite<phen_t, eval_t, stat_t, modifier_t, selector::ScoreProportionate<phen_t,selector::getCuriosity>, aggregator::Map<phen_t, Params>, Params> ea_t;
+    typedef selector::ScoreProportionate<phen_t,selector::getCuriosity> select_t;
 #endif
+
+    typedef ea::MapElite<phen_t, eval_t, stat_t, modifier_t, select_t, aggreg_t, Params> ea_t;
+
     ea_t ea;
     ea.run();
 }

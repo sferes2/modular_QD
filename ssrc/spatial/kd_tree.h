@@ -868,7 +868,7 @@ public:
    * mapping (e.g., the tree is empty).
    */
   iterator find_nearest_neighbor(const key_type & point,
-                                 const bool omit_query_point = true)
+                                 const bool omit_query_point = true) const
   {
     const detail::kd_tree_nearest_neighbor<traits, double> nn;
     return iterator(nn.find(_root, point, omit_query_point));
@@ -900,7 +900,7 @@ public:
   std::pair<knn_iterator, knn_iterator>
   find_nearest_neighbors(const key_type & point,
                          const unsigned int num_neighbors,
-                         const bool omit_query_point = true)
+                         const bool omit_query_point = true) const
   {
     const detail::kd_tree_nearest_neighbors<traits, double> knn;
     return knn.find(_root, point, num_neighbors, omit_query_point);

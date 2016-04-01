@@ -49,8 +49,8 @@ namespace detail {
     friend traits::const_iterator;
     friend traits::tree_type;
 #else
-    friend class traits::const_iterator;
-    friend class traits::tree_type;
+    friend typename traits::const_iterator;//friend class traits::const_iterator;
+    friend typename traits::tree_type;
 #endif
     typedef std::stack<node_type *> stack_type;
 

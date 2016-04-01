@@ -66,7 +66,7 @@ def build(bld):
                            uselib = libs,
                            target = 'scenario_arm',
                            json = '',
-                           variants = ['RANDOM', 'FITNESS', 'NOVELTY', 'CURIOSITY'])
+                           variants = ['GRID RANDOM', 'GRID FITNESS', 'GRID NOVELTY', 'GRID CURIOSITY', 'ARCHIVE RANDOM'])
 
 
 

@@ -3,5 +3,6 @@
 
 
 #include "aggregator/map.hpp"
+#include "aggregator/archive.hpp"
 
 #endif
