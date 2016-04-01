@@ -43,9 +43,12 @@ namespace sferes
     SFERES_FITNESS(FitMap, sferes::fit::Fitness)
     {
       public:
-        FitMap() : _desc(Params::ea::behav_dim) { }
+      FitMap() : _desc(Params::ea::behav_dim),_novelty(0),_curiosity(0) { }
         const std::vector<float>& desc() const { return _desc; }
-
+	double novelty()const {return _novelty;}
+	void set_novelty(double nov) {_novelty=nov;}
+	double curiosity()const {return _curiosity;}
+	void set_curiosity(double cur) {_curiosity=cur;}
         /*void set_desc(float x1, float x2)
         {
           assert(x1 >= 0);
@@ -68,6 +71,8 @@ namespace sferes
         }
       protected:
         std::vector<float> _desc;
+	double _novelty;
+	double _curiosity;
     };
   }
 }

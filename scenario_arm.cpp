@@ -32,9 +32,6 @@
 //| The fact that you are presently reading this means that you have
 //| had knowledge of the CeCILL license and that you accept its terms.
 
-#define BOOST_TEST_DYN_LINK
-#define BOOST_TEST_MODULE map_elite
-
 #include <iostream>
 #include <cmath>
 
@@ -43,8 +40,7 @@
 #include <boost/array.hpp>
 #include <boost/fusion/algorithm/iteration/for_each.hpp>
 #include <boost/fusion/include/for_each.hpp>
-
-#include <boost/test/unit_test.hpp>
+#include <Eigen/Core>
 
 #include <sferes/eval/parallel.hpp>
 #include <sferes/gen/evo_float.hpp>
@@ -56,8 +52,10 @@
 #include "map_elite.hpp"
 #include "fit_map.hpp"
 #include "stat_map.hpp"
+#include "stat_selection.hpp"
 
 
+#include "arm_hori.hpp"
 
 /*#define NO_MPI
 #ifdef GRAPHIC
@@ -83,7 +81,7 @@ struct Params
 {
 
   struct nov{
-    SFERES_CONST size_t deep=2;
+    SFERES_CONST size_t deep=5;
   };
     struct ea
     {
@@ -91,22 +89,22 @@ struct Params
       SFERES_CONST size_t res_y = 256;*/
 
         SFERES_CONST size_t behav_dim = 2;
-        SFERES_ARRAY(size_t, behav_shape, 256, 256);
+        SFERES_ARRAY(size_t, behav_shape, 128, 128);
 
     };
     struct pop
     {
         // number of initial random points
-        SFERES_CONST size_t init_size = 1000;
+        SFERES_CONST size_t init_size = 100;
         // size of a batch
-        SFERES_CONST size_t size = 2000;
-        SFERES_CONST size_t nb_gen = 5001;
+        SFERES_CONST size_t size = 200;
+        SFERES_CONST size_t nb_gen = 50001;
         SFERES_CONST size_t dump_period = 1000;
     };
     struct parameters
     {
-        SFERES_CONST float min = -5;
-        SFERES_CONST float max = 5;
+        SFERES_CONST float min = -1;
+        SFERES_CONST float max = 1;
     };
     struct evo_float
     {
@@ -121,34 +119,38 @@ struct Params
 };
 
 
-// Rastrigin
-FIT_MAP(Rastrigin)
+
+FIT_MAP(ArmFit)
 {
     public:
     template<typename Indiv>
     void eval(Indiv& ind)
     {
-        float f = 10 * ind.size();
-        for (size_t i = 0; i < ind.size(); ++i)
-            f += ind.data(i) * ind.data(i) - 10 * cos(2 * M_PI * ind.data(i));
-        this->_value = -f;
-
-        std::vector<float> data = {ind.gen().data(0), ind.gen().data(1)};
-        //this->set_desc(ind.gen().data(0), ind.gen().data(1));
-        this->set_desc(data);
+    
+      Eigen::VectorXd angle(ind.size());
+      for (size_t i = 0; i < ind.size(); ++i)
+	angle[i] = ind.data(i)*M_PI/2;
+      this->_value = - sqrt((angle.array()-angle.mean()).square().mean());
+      Eigen::Vector3d pos=robot::Arm::forward_model(angle);
+      float L=robot::Arm::max_length();
+      std::vector<float> data = {(float) (pos[0]+L)/(2*L), (float) (pos[1]+L)/(2*L)};
+      //this->set_desc(ind.gen().data(0), ind.gen().data(1));
+      this->set_desc(data);
     }
 
     bool dead() {return false;}
 };
 
-BOOST_AUTO_TEST_CASE(map_elite)
+int main()
 {
+    srand (time(NULL));
+  
+
     using namespace sferes;
 
-    typedef Rastrigin<Params> fit_t;
-    typedef gen::EvoFloat<10, Params> gen_t;
+    typedef ArmFit<Params> fit_t;
+    typedef gen::EvoFloat<8, Params> gen_t;
     typedef phen::Parameters<gen_t, fit_t, Params> phen_t;
-
     typedef eval::Parallel<Params> eval_t;
     /*#ifndef NO_PARALLEL
     typedef eval::Parallel<Params> eval_t;
@@ -156,12 +158,22 @@ BOOST_AUTO_TEST_CASE(map_elite)
     typedef eval::Eval<Params> eval_t;
 #endif*/
 
+    //    typedef boost::fusion::vector<stat::Map<phen_t, Params>, stat::BestFit<phen_t, Params>,stat::Selection<phen_t,Params> > stat_t;
     typedef boost::fusion::vector<stat::Map<phen_t, Params>, stat::BestFit<phen_t, Params> > stat_t;
     typedef modif::Dummy<> modifier_t;
-    //typedef ea::MapElite<phen_t, eval_t, stat_t, modifier_t, selector::ScoreProportionate<phen_t>, aggregator::Map<phen_t, Params>, Params> ea_t;
-    //typedef ea::MapElite<phen_t, eval_t, stat_t, modifier_t, selector::Random<phen_t>, aggregator::Map<phen_t, Params>, Params> ea_t;
-    typedef ea::MapElite<phen_t, eval_t, stat_t, modifier_t, selector::Novelty<phen_t>, aggregator::Map<phen_t, Params>, Params> ea_t;
 
+#ifdef RANDOM
+    typedef ea::MapElite<phen_t, eval_t, stat_t, modifier_t, selector::Random<phen_t>, aggregator::Map<phen_t, Params>, Params> ea_t;
+#endif
+#ifdef FITNESS
+    typedef ea::MapElite<phen_t, eval_t, stat_t, modifier_t, selector::ScoreProportionate<phen_t,selector::getFitness>, aggregator::Map<phen_t, Params>, Params> ea_t;
+#endif
+#ifdef NOVELTY
+    typedef ea::MapElite<phen_t, eval_t, stat_t, modifier_t, selector::ScoreProportionate<phen_t,selector::getNovelty>, aggregator::Map<phen_t, Params>, Params> ea_t;
+#endif
+#ifdef CURIOSITY
+    typedef ea::MapElite<phen_t, eval_t, stat_t, modifier_t, selector::ScoreProportionate<phen_t,selector::getCuriosity>, aggregator::Map<phen_t, Params>, Params> ea_t;
+#endif
     ea_t ea;
     ea.run();
 }

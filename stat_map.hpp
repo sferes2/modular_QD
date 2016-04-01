@@ -5,7 +5,7 @@
 #include <boost/multi_array.hpp>
 #include <sferes/stat/stat.hpp>
 
-#define MAP_WRITE_PARENTS
+//#define MAP_WRITE_PARENTS
 
 namespace sferes
 {

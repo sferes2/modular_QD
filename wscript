@@ -34,17 +34,46 @@
 #| had knowledge of the CeCILL license and that you accept its terms.
 
 import os
+import sferes
 
 def set_options(blah) : pass
 
 def configure(blah): pass
 
 def build(bld):
+
+    libs = 'EIGEN3 BOOST BOOST_UNIT_TEST_FRAMEWORK  BOOST_TIMER TBB'
+    
     print ("Entering directory `" + os.getcwd() + "/modules/'")
     test_map_elite = bld.new_task_gen('cxx', 'program')
     test_map_elite.source = 'test_map_elite.cpp'
     test_map_elite.includes = '. ../../'
     test_map_elite.uselib_local = 'sferes2'
-    test_map_elite.uselib = 'EIGEN3 BOOST BOOST_UNIT_TEST_FRAMEWORK'
+    test_map_elite.uselib = libs
     test_map_elite.target = 'test_map_elite'
     test_map_elite.unit_test = 1
+
+
+    model = bld.new_task_gen('cxx', 'staticlib')
+    model.source = 'arm_hori.cpp'
+    model.includes = '. ../../'
+    model.target = 'robot'
+    model.uselib = libs
+
+    sferes.create_variants(bld,
+                           source = 'scenario_arm.cpp',
+                           uselib_local = 'sferes2 robot',
+                           uselib = libs,
+                           target = 'scenario_arm',
+                           json = '',
+                           variants = ['RANDOM', 'FITNESS', 'NOVELTY', 'CURIOSITY'])
+
+
+
+    #scenario_arm = bld.new_task_gen('cxx', 'program')
+    #scenario_arm.source = 'scenario_arm.cpp arm_hori.cpp'
+    #scenario_arm.includes = '. ../../'
+    #scenario_arm.uselib_local = 'sferes2'
+    #scenario_arm.uselib = 'EIGEN3 BOOST BOOST_UNIT_TEST_FRAMEWORK  BOOST_TIMER TBB'
+    #scenario_arm.target = 'scenario_arm'
+    #scenario_arm.variants = ['RANDOM', 'FITNESS', 'NOVELTY', 'CURIOSITY']

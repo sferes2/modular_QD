@@ -44,6 +44,8 @@
 #include <boost/array.hpp>
 #include <boost/fusion/algorithm/iteration/for_each.hpp>
 #include <boost/fusion/include/for_each.hpp>
+#include <boost/timer/timer.hpp>
+
 
 #include <sferes/stc.hpp>
 #include <sferes/ea/ea.hpp>
@@ -110,44 +112,75 @@ namespace ea
 
     void random_pop()
     {
-        parallel::init();
-        this->_pop.resize(Params::pop::init_size);
-        BOOST_FOREACH(boost::shared_ptr<Phen>&indiv, this->_pop)
+      parallel::init();
+      this->_pop.resize(Params::pop::init_size);
+      BOOST_FOREACH(boost::shared_ptr<Phen>&indiv, this->_pop)
         {
-            indiv = boost::shared_ptr<Phen>(new Phen());
-            indiv->random();
+	  indiv = boost::shared_ptr<Phen>(new Phen());
+	  indiv->random();
         }
-        this->_eval_pop(this->_pop, 0, this->_pop.size());
-        BOOST_FOREACH(boost::shared_ptr<Phen>&indiv, this->_pop)
-                _aggreg.add_to_archive(indiv, indiv);
+      this->_eval_pop(this->_pop, 0, this->_pop.size());
+      BOOST_FOREACH(boost::shared_ptr<Phen>&indiv, this->_pop)
+	_aggreg.add_to_archive(indiv, indiv);
+      _aggreg.update_novelty();
+      
     }
 
     void epoch()
     {
+
+      {
+	//boost::timer::auto_cpu_timer t;
         this->_pop.clear();
 	this->_pop=_aggreg.get_full_content();
+	_select.init(this->_pop);
+	
+	//std::cout<<"init pop and select"<<std::endl;
+      }
 
-        pop_t ptmp, p_parents;
+      
+      {
+	//boost::timer::auto_cpu_timer t;
+	_ptmp.clear();
+	_p_parents.clear();
+	_added.clear();
+	
         for (size_t i = 0; i < Params::pop::size/2; ++i)
         {
-            indiv_t p1 = _select(this->_pop);
-            indiv_t p2 = _select(this->_pop);
+            indiv_t p1 = _select();
+            indiv_t p2 = _select();
             boost::shared_ptr<Phen> i1, i2;
             p1->cross(p2, i1, i2);
             i1->mutate();
             i2->mutate();
             i1->develop();
             i2->develop();
-            ptmp.push_back(i1);
-            ptmp.push_back(i2);
-            p_parents.push_back(p1);
-            p_parents.push_back(p2);
-        }
-        this->_eval_pop(ptmp, 0, ptmp.size());
-
-        assert(ptmp.size() == p_parents.size());
-        for (size_t i = 0; i < ptmp.size(); ++i)
-            _aggreg.add_to_archive(ptmp[i], p_parents[i]);
+            _ptmp.push_back(i1);
+            _ptmp.push_back(i2);
+            _p_parents.push_back(p1);
+            _p_parents.push_back(p2);
+	 }
+	//std::cout<<"select and mut"<<std::endl;
+      }
+       
+	{
+	  //boost::timer::auto_cpu_timer t;
+        this->_eval_pop(_ptmp, 0, _ptmp.size());
+	//std::cout<<"eval pop"<<std::endl;
+	}
+	{
+	  //boost::timer::auto_cpu_timer t;
+        assert(_ptmp.size() == _p_parents.size());
+	_added.resize(_ptmp.size());
+        for (size_t i = 0; i < _ptmp.size(); ++i)
+	  _added[i]=_aggreg.add_to_archive(_ptmp[i], _p_parents[i]);
+	//std::cout<<"add to archive"<<std::endl;
+	}
+	{
+	  //boost::timer::auto_cpu_timer t;
+	  _aggreg.update_novelty();
+	  //std::cout<<"update nov"<<std::endl;
+	}
     }
 
 
@@ -159,13 +192,16 @@ namespace ea
     }
 
     const Aggreg&  aggreg()const {return _aggreg;}
+    const pop_t& ptmp()const {return _ptmp;}
+    const pop_t& p_parents()const {return _p_parents;}
+    const std::vector<bool>& added()const {return _added;}
     protected:
     
     Select _select;
     Aggreg _aggreg;
     
-
-
+    pop_t _ptmp, _p_parents;
+    std::vector<bool> _added;
 };
 }
 }
