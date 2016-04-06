@@ -3,6 +3,13 @@
 
 
 
+static double sign(double d)
+{
+  if(d < 0)
+    return -1;
+  return 1;
+}
+
 template<typename V1, typename V2>
 double _dist(const V1& v1, const V2& v2)
 {
@@ -16,7 +23,7 @@ double _dist(const V1& v1, const V2& v2)
       ++it1;
       ++it2;
     }
-  return res;
+  return sqrt( res);
 }
 
 template<typename T>

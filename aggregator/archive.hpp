@@ -22,23 +22,13 @@ namespace sferes
 
       Archive(){}
 
-      std::vector<indiv_t> get_full_content()
+       void get_full_content(std::vector<indiv_t>& content)
       {
-	std::vector<indiv_t> content;
 	for(auto it=_archive.begin(); it!=_archive.end();it++)
 	  content.push_back((*it).second);
             //std::cout<<"full " <<(*i)->fit().novelty()<<std::endl;                                                                                                       
-          
-	return content;
       }
       
-      template<typename Behavior,typename Point>
-      static void _behavior_to_point(const Behavior& b, Point* p)
-      {
-	assert(p->size() == b.size());
-	for (size_t i = 0; i < p->size(); ++i)
-	  (*p)[i] = b[i];
-      }
 
 
       bool add_to_archive(indiv_t i1, indiv_t parent)
@@ -46,57 +36,231 @@ namespace sferes
 	
 	//TODO
 	// update archive
-	if (_archive.size()<Params::nov::k || get_novelty(i1,_archive) > 0.01)
+	
+
+	if (_archive.size()<Params::nov::k || _dist(get_nearest(i1,_archive,false)->fit().desc(), i1->fit().desc()) > Params::nov::l) //ADD because new
 	  {
-	    point_t p;
-	    this->_behavior_to_point(i1->fit().desc(), &p);
-	    typename Tree::iterator it = _archive.find(p);
-	    if (it == _archive.end())
+	    _add(i1);
+	    return true;
+	  }
+	else 
+	  {
+	    pop_t neigh_current;
+	    get_knn(i1, _archive, 2, neigh_current, false); //Be careful, the first one referes to nn
+	    if(_dist(i1->fit().desc(), neigh_current[1]->fit().desc())  < (1-Params::nov::eps)*Params::nov::l)//too close the second NN -- this works better
+	    //if(_dist(i1->fit().desc(), neigh_current[1]->fit().desc())  < Params::nov::l)//too close the second NN
+	      return false;    
+
+	    indiv_t nn=neigh_current[0];
+
+	    std::vector<double> score_cur(2,0), score_nn(2,0);
+	    score_cur[0]=i1->fit().value();
+	    score_nn[0]=nn->fit().value();
+	    
+	    //Compute the Novelty
+	    neigh_current.clear();
+            get_knn(i1, _archive, Params::nov::k+1, neigh_current, false); //Be careful, the first one referes to nn 
+	    score_cur[1] = get_novelty( nn , neigh_current.begin()++, neigh_current.end());
+	    score_nn[1] = get_novelty( nn , _archive);
+	    
+
+	    //Comput sum dists
+	    /*score_nn[2]= - get_sum_dist_kppn(nn, _archive, 1 Params::ea::behav_dim, true); //should be negate to optimise all the score.
+	    if(Params::ea::behav_dim > Params::nov::k){
+	      assert(false); //TODO
+	    }
+	    else{
+	      typename pop_t::iterator it= (++neigh_current.begin());
+	      for(int i =0;i<Params::ea::behav_dim; i++)
+		{
+		  score_cur[2] -= _dist((*it)->fit().desc(), i1->fit().desc());
+		  it++;
+		  }
+	      
+		  }*/
+	    //std::cout<<score_cur[0]<<"  "<<score_cur[1]<<"  "<<score_cur[2]<<" : "<< (1-sign(score_nn[0])*Params::nov::eps)*score_nn[0]<<"  "<<(1-sign(score_nn[1])*Params::nov::eps)*score_nn[1]<<"  "<<(1-sign(score_nn[2])*Params::nov::eps)*score_nn[2]<<" : "<<std::endl;
+	    //std::cout<<score_cur[0]<<"  "<<score_cur[1]<<" : "<< (1-sign(score_nn[0])*Params::nov::eps)*score_nn[0]<<"  "<<(1-sign(score_nn[1])*Params::nov::eps)*score_nn[1]<<"  "<<std::endl;
+	    
+	    //THIS WORKS as well but less
+	    /*int score=0;     
+            
+	    if(score_cur[0] >= score_nn[0] && score_cur[1] >= (1-sign(score_nn[1])*Params::nov::eps)*score_nn[1] ) //not replacing something less efficient
 	      {
-		_archive.insert(p, i1);
-		_archive.optimize();
+		_replace(nn,i1);
+		return true;
+		}*/
+	    //-------
+
+	    // THIS WORKS--------  TO STAY IN THE ARCHIVE YOU NEED TO epsilon dominate! (kind of)
+	    int score=0;
+	    for(int i =0;i<score_cur.size(); i++){
+	      if(score_cur[i] < (1-sign(score_nn[i])*Params::nov::eps)*score_nn[i] )
+	      return false;//nothing below the epsilon in one obj
+	      if(score_cur[i] >=score_nn[i] )
+		score++;
+	    }
+	    
+	    if(score>=1)//if better on at least 1 objective
+	      {
+		//std::cout<<"replace"<<std::endl;
+		_replace(nn,i1);
 		return true;
 	      }
-	  }
-	else
-	  return false;
 	    
-      
-      return false;
-      
-    }
+	    //---------------
 
-      void update_novelty(){
-	std::cout<<_archive.size()<<std::endl;
-	// add current pop to the tree// ?? NO!
-	/*parallel::init();
-	Tree apop = _archive;
-	for (size_t i = 0; i < ea.pop().size(); ++i)
-	  {
-	    point_t p;
-	    novelty::_behavior_to_point(ea.pop()[i]->fit().desc(), &p);
-	    typename Tree::iterator it = apop.find(p);
-	    if (it != apop.end())
-	      it->second ++;
+	    /*indiv_t nn=get_nearest(i1,_archive, false); //Here we don't omit the query point because i1 is not in the archive
+	    pop_t neigh_nn, neigh_current;
+	    get_knn(nn, _archive, 2, neigh_nn, true); //here nn is in the archive
+	    get_knn(i1, _archive, 3, neigh_current, false); //Be careful, the first one referes to nn
+	    
+	    double dnn1=_dist(nn->fit().desc(), neigh_nn[0]->fit().desc());
+	    double dnn2=_dist(nn->fit().desc(), neigh_nn[1]->fit().desc());
+	    double diff_nn=std::abs(dnn1-dnn2);
+	    double sum_nn=dnn1+dnn2;
+	    
+	    double dcur0=_dist(i1->fit().desc(), neigh_current[0]->fit().desc()); //distance according to the individual that may be potentially replaced 
+	    double dcur1=_dist(i1->fit().desc(), neigh_current[1]->fit().desc());
+	    double dcur2=_dist(i1->fit().desc(), neigh_current[2]->fit().desc());
+	    double diff_current=std::abs(dcur1-dcur2);
+	    double sum_cur=dcur1+dcur2;*/
+
+	    //if(dcur1<(1-Params::nov::eps)*Params::nov::l)//too close from existing inviduals.
+	    // return false;
+
+
+	    /*  if(get_novelty( i1 , _archive) >=get_novelty( nn , _archive)   && nn->fit().value() < i1->fit().value())//the new one has a better performance.                                                                                   
+		//WRONG You need to remove nn when computing nov i1
+	      _replace(nn,i1);  
+	    */
+
+	    /*    if((get_novelty( i1 , _archive) >(1-Params::nov::eps)*get_novelty( nn , _archive)   && i1->fit().value() > nn->fit().value()) ||
+	       (get_novelty( i1 , _archive) >                     get_novelty( nn , _archive)   && i1->fit().value() > (1-nn->fit().value()*Params::nov::eps/std::abs(nn->fit().value()))*nn->fit().value()) )
+	       _replace(nn,i1);*/
+
+	    /*if(dcur0<Params::nov::eps*Params::nov::l)// the two individuals are in almost the same location.
+	      {
+		if(nn->fit().value() < i1->fit().value())//the new one has a better performance.
+		  _replace(nn,i1);
+	      }
 	    else
-	      apop.insert(p, 1);
+	      {
+		if(diff_current-diff_nn  <  - Params::nov::eps*Params::nov::l/2  && sum_cur-sum_nn< - Params::nov::eps*Params::nov::l*2)// if the new indiv if significantly placed better.
+		  _replace(nn,i1);
+		else if(diff_current-diff_nn  <  - Params::nov::eps*Params::nov::l/2  && std::abs(sum_cur-sum_nn)< Params::nov::eps*Params::nov::l*2)// if the new indiv if significantly placed better.
+		  if(nn->fit().value() < i1->fit().value())//the new one has a better performance. 
+		    _replace(nn,i1);
+		else if(std::abs(diff_current-diff_nn)<Params::nov::eps*Params::nov::l/2 && sum_cur-sum_nn< - Params::nov::eps*Params::nov::l*2)// if the two individuals are equally placed then we check which one is the more compact 
+		  _replace(nn,i1);
+		  else if(std::abs(diff_current-diff_nn)<Params::nov::eps*Params::nov::l/2 && std::abs(sum_cur-sum_nn)< Params::nov::eps*Params::nov::l*2)// The position is very similar ?? Should we test directly if nn is very close to current?
+		    if(nn->fit().value() < i1->fit().value())//the new one has a better performance. 
+		      _replace(nn,i1);
+		      }*/
+	    return false;  
 	  }
-	apop.optimize();
-	*/
-	//tbb::parallel_for( tbb::blocked_range<indiv_t*>(_array.data(),_array.data() + _array.num_elements()),
-	//                 Par_novelty<Map<Phen,Params> >(*this));
-
-	/*tbb::parallel_for_each(_archive.begin(),_archive.end(), [=](typename Tree::value_type& val ) {
-	    double nov= Archive::get_novelty(val.second->second,_apop);
-	    val.second->fit().set_novelty(nov);
-	    } );*/
 	
-	tbb::parallel_for_each(_archive.begin(),_archive.end(),_p_novelty(_archive));
 
-	// _p_novelty<typename phen_t, Tree, Params> pnov(get_full_content(), apop);
-	// parallel::p_for(parallel::range_t(0, ea.pop().size()), pnov);
+	return false;
+      
+      }
+
+
+
+
+      void update(){
+	_archive.optimize();
+	_update_novelty();
       }
     
+
+      static double get_sum_dist_kppn(const indiv_t& indiv, const Tree&  apop, const int K,const bool omit=true)
+      {
+	 pop_t nearest;
+	 get_knn(indiv,apop,K,nearest,omit); //here we omit because indivs are in the archive
+	 // compute the mean distance                                                                                                                                         
+	 double sum = 0.0f;                                                                                                                                                    
+	 BOOST_FOREACH(indiv_t& x, nearest)                                                                                                                   
+	   sum += _dist(x->fit().desc(), indiv->fit().desc());
+	 return sum;
+       }
+      
+      static indiv_t get_nearest(const indiv_t& indiv, const Tree&  apop, const bool omit_query_point) {
+	typename Tree::key_type q;
+	Archive::_behavior_to_point(indiv->fit().desc(), &q);
+	typename Tree::iterator it=apop.find_nearest_neighbor(q,omit_query_point);
+	return it->second;
+      }
+
+      static void get_knn(const indiv_t& indiv, const Tree&  apop, int k, pop_t& nearest, const bool omit_query_point){
+	typename Tree::key_type q;
+	Archive::_behavior_to_point(indiv->fit().desc(), &q);
+	// k nearest points
+	typedef typename Tree::knn_iterator knn_iterator_t;
+	std::pair<knn_iterator_t, knn_iterator_t> 
+	  range = apop.find_nearest_neighbors(q, k, omit_query_point);
+	
+	nearest.clear();
+	for(knn_iterator_t it = range.first, end = range.second; it != end && nearest.size() < k; ++it)
+	  //for (size_t z = 0; z < it->second && nearest.size() < Params::nov::k; ++z)
+	  nearest.push_back(it->second);
+	
+	assert(nearest.size() == k);
+      }
+
+      static double get_novelty(const indiv_t& indiv, const Tree&  apop) {
+	return get_sum_dist_kppn(indiv,apop,Params::nov::k,true)/Params::nov::k;
+      }
+      static double get_novelty(const indiv_t& indiv, typename pop_t::iterator begin, typename pop_t::iterator end) { 
+	if(std::distance(begin,end)>Params::nov::k){
+	  //NEED to sort
+	  //  std::sort(begin,end,_compare_dist_f(indiv));
+	  assert(false);
+	}
+	double sum =0;
+	typename pop_t::iterator it= begin;
+	for(int i =0;i<Params::nov::k; i++){
+	  sum += _dist((*it)->fit().desc(), indiv->fit().desc());
+	  it++;
+	}
+	return sum/Params::nov::k;
+      }
+
+      const Tree& archive() const{return _archive;}
+  
+    protected:
+      void _add(const indiv_t& tobeinserted)
+      {
+	point_t p;
+	this->_behavior_to_point(tobeinserted->fit().desc(), &p);
+	typename Tree::iterator it = _archive.find(p);
+	if (it == _archive.end())
+	  {
+	    _archive.insert(p, tobeinserted);
+	  }
+      }
+
+      void _replace(const indiv_t& toberemoved,const indiv_t& tobeinserted){
+	point_t remove;
+	this->_behavior_to_point(toberemoved->fit().desc(), &remove);
+	_archive.remove(remove);
+	    //std::cout<<"problem remove"<<std::endl;
+	_add(tobeinserted);
+      }
+
+
+      
+      void _update_novelty(){
+	tbb::parallel_for_each(_archive.begin(),_archive.end(),_p_novelty(_archive));
+      }
+
+
+      template<typename Behavior,typename Point>
+      static void _behavior_to_point(const Behavior& b, Point* p)
+      {
+	assert(p->size() == b.size());
+	for (size_t i = 0; i < p->size(); ++i)
+	  (*p)[i] = b[i];
+      }
       
        struct _p_novelty
       {
@@ -117,36 +281,7 @@ namespace sferes
 	     //}
 	}
       };
-      
-    
-      static double get_novelty(const indiv_t& indiv, const Tree&  apop) {
-	pop_t nearest;
-	typename Tree::key_type q;
-	Archive::_behavior_to_point(indiv->fit().desc(), &q);
-	// k nearest points
-	typedef typename Tree::knn_iterator knn_iterator_t;
-	std::pair<knn_iterator_t, knn_iterator_t> 
-	  range = apop.find_nearest_neighbors(q, Params::nov::k, false);
-	
-	nearest.clear();
-	for(knn_iterator_t it = range.first, end = range.second; it != end && nearest.size() < Params::nov::k; ++it)
-	  //for (size_t z = 0; z < it->second && nearest.size() < Params::nov::k; ++z)
-	  nearest.push_back(it->second);
-	
-	assert(nearest.size() == Params::nov::k);
-	
-	// compute the mean distance                                                                                                                                         
-	double nov = 0.0f;                                                                                                                                                    
-	BOOST_FOREACH(indiv_t& x, nearest)                                                                                                                   
-	  nov += _dist(x->fit().desc(), indiv->fit().desc());                                                                                                                                                
-	nov /= Params::nov::k;      
-	
-	return nov;
-    }
 
-      const Tree& archive() const{return _archive;}
-  
-    protected:
       Tree _archive;
 
     };

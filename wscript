@@ -45,13 +45,13 @@ def build(bld):
     libs = 'EIGEN3 BOOST BOOST_UNIT_TEST_FRAMEWORK  BOOST_TIMER TBB'
     
     print ("Entering directory `" + os.getcwd() + "/modules/'")
-    test_map_elite = bld.new_task_gen('cxx', 'program')
-    test_map_elite.source = 'test_map_elite.cpp'
-    test_map_elite.includes = '. ../../'
-    test_map_elite.uselib_local = 'sferes2'
-    test_map_elite.uselib = libs
-    test_map_elite.target = 'test_map_elite'
-    test_map_elite.unit_test = 1
+    #test_map_elite = bld.new_task_gen('cxx', 'program')
+    #test_map_elite.source = 'test_map_elite.cpp'
+    #test_map_elite.includes = '. ../../'
+    #test_map_elite.uselib_local = 'sferes2'
+    #test_map_elite.uselib = libs
+    #test_map_elite.target = 'test_map_elite'
+    #test_map_elite.unit_test = 1
 
 
     model = bld.new_task_gen('cxx', 'staticlib')
@@ -66,7 +66,8 @@ def build(bld):
                            uselib = libs,
                            target = 'scenario_arm',
                            json = '',
-                           variants = ['GRID RANDOM', 'GRID FITNESS', 'GRID NOVELTY', 'GRID CURIOSITY', 'ARCHIVE RANDOM'])
+                           variants = ['GRID RANDOM', 'GRID FITNESS', 'GRID NOVELTY', 'GRID CURIOSITY', 
+                                       'ARCHIVE RANDOM','ARCHIVE FITNESS','ARCHIVE NOVELTY','ARCHIVE CURIOSITY',])
 
 
 

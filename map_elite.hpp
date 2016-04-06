@@ -122,7 +122,7 @@ namespace ea
       this->_eval_pop(this->_pop, 0, this->_pop.size());
       BOOST_FOREACH(boost::shared_ptr<Phen>&indiv, this->_pop)
 	_aggreg.add_to_archive(indiv, indiv);
-      _aggreg.update_novelty();
+      _aggreg.update();
       
     }
 
@@ -132,7 +132,7 @@ namespace ea
       {
 	//boost::timer::auto_cpu_timer t;
         this->_pop.clear();
-	this->_pop=_aggreg.get_full_content();
+	_aggreg.get_full_content(this->_pop);
 	_select.init(this->_pop);
 	
 	//std::cout<<"init pop and select"<<std::endl;
@@ -178,7 +178,7 @@ namespace ea
 	}
 	{
 	  //boost::timer::auto_cpu_timer t;
-	  _aggreg.update_novelty();
+	  _aggreg.update();
 	  //std::cout<<"update nov"<<std::endl;
 	}
     }

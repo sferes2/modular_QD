@@ -97,15 +97,12 @@ namespace sferes
       //-----------------------------------------------
 
 
-      std::vector<indiv_t> get_full_content()
+      void get_full_content(std::vector<indiv_t>& content)
       {
-	std::vector<indiv_t> content;
 	for(const indiv_t* i = _array.data(); i < (_array.data() + _array.num_elements()); ++i)
-	  if(*i){
+	  if(*i)
 	    content.push_back(*i);
-	    //std::cout<<"full " <<(*i)->fit().novelty()<<std::endl;
-	  }
-	return content;
+	  
       }
 
       
@@ -200,13 +197,7 @@ namespace sferes
       }
 
       
-
-      void update_novelty(){
-      
-	tbb::parallel_for( tbb::blocked_range<indiv_t*>(_array.data(),_array.data() + _array.num_elements()), 
-			   Par_novelty<Map<Phen,Params> >(*this));
-      }
-
+      void update(){_update_novelty();}
 
 	/*for(const indiv_t* indiv = _array.data(); indiv < (_array.data() + _array.num_elements()); ++indiv)
 	    if(*indiv)
@@ -252,6 +243,15 @@ namespace sferes
     const array_t& parents() const { return _array_parents; }
 
     protected:
+
+      void _update_novelty(){
+      
+	tbb::parallel_for( tbb::blocked_range<indiv_t*>(_array.data(),_array.data() + _array.num_elements()), 
+			   Par_novelty<Map<Phen,Params> >(*this));
+      }
+
+
+
       array_t _array;
       //array_t _prev_array;
       array_t _array_parents;

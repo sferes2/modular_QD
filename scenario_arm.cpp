@@ -84,6 +84,8 @@ struct Params
   struct nov{
     SFERES_CONST size_t deep=5;
     SFERES_CONST size_t k=15;
+    SFERES_CONST double l=0.01;
+    SFERES_CONST double eps=0.1;
     
   };
     struct ea
@@ -173,6 +175,7 @@ int main()
 #ifdef ARCHIVE
     typedef aggregator::Archive<phen_t, Params> aggreg_t;
     typedef boost::fusion::vector<stat::Archive<phen_t, Params> > stat_t;
+    //typedef boost::fusion::vector<stat::Archive<phen_t, Params>, stat::Selection<phen_t,Params> > stat_t;
 #endif
 
 
