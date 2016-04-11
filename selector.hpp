@@ -4,6 +4,7 @@
 
 #include "selector/random.hpp"
 #include "selector/scoreProportionate.hpp"
-//#include "selector/novelty.hpp"
+#include "selector/noselection.hpp"
+#include "selector/populationbased.hpp"
 
 #endif

@@ -31,19 +31,19 @@ SFERES_STAT(Selection, Stat)
 	ofs=std::ofstream(fname.c_str());
       }
 
-      assert(ea.ptmp().size()==ea.p_parents().size());
-      assert(ea.ptmp().size()==ea.added().size());
+      assert(ea.offspring().size()==ea.parents().size());
+      assert(ea.offspring().size()==ea.added().size());
       
-      for(size_t i=0;i<ea.ptmp().size();i++){
+      for(size_t i=0;i<ea.offspring().size();i++){
 	ofs<<ea.gen()<<"  ";
-	for(size_t dim = 0; dim < ea.p_parents()[i]->fit().desc().size(); ++dim)
-	  ofs<<ea.p_parents()[i]->fit().desc()[dim]<<" ";
-	ofs<<"   "<<ea.p_parents()[i]->fit().value()<<"   ";
-	ofs<<"   "<<ea.p_parents()[i]->fit().curiosity()<<"   ";
+	for(size_t dim = 0; dim < ea.parents()[i]->fit().desc().size(); ++dim)
+	  ofs<<ea.parents()[i]->fit().desc()[dim]<<" ";
+	ofs<<"   "<<ea.parents()[i]->fit().value()<<"   ";
+	ofs<<"   "<<ea.parents()[i]->fit().curiosity()<<"   ";
 	
-	for(size_t dim = 0; dim < ea.ptmp()[i]->fit().desc().size(); ++dim)
-          ofs<<ea.ptmp()[i]->fit().desc()[dim]<<" ";
-	ofs<<"   "<<ea.ptmp()[i]->fit().value()<<"   ";
+	for(size_t dim = 0; dim < ea.offspring()[i]->fit().desc().size(); ++dim)
+          ofs<<ea.offspring()[i]->fit().desc()[dim]<<" ";
+	ofs<<"   "<<ea.offspring()[i]->fit().value()<<"   ";
 	
 	ofs<<"   "<<ea.added()[i]<<std::endl;
 	    

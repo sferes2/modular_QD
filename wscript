@@ -32,17 +32,53 @@
 #|
 #| The fact that you are presently reading this means that you have
 #| had knowledge of the CeCILL license and that you accept its terms.
-
+import sys
 import os
 import sferes
+sys.path.insert(0, sys.path[0]+'/waf_tools')
+print sys.path[0]
+#from waflib.Build import BuildContext
 
-def set_options(blah) : pass
+from waflib.Configure import conf
 
-def configure(blah): pass
+import dart
+import hexapod_controller
+
+
+
+def options(opt) : 
+    opt.load('dart')
+    opt.load('hexapod_controller')
+    opt.load('hexapod_dart_simu')
+
+
+@conf
+def configure(conf): 
+    print 'conf exp:'
+    conf.load('dart')
+    conf.load('hexapod_controller')
+    conf.load('hexapod_dart_simu')
+    conf.check_dart()
+    conf.check_hexapod_controller()
+    conf.check_hexapod_dart_simu()
+
+    if conf.env.CXX_NAME in ["icc", "icpc"]:
+        common_flags = "-Wall -std=c++11"
+        opt_flags = " -O3 -xHost  -march=native -mtune=native -unroll -fma -g"
+    elif conf.env.CXX_NAME in ["clang"]:
+        common_flags = "-Wall -std=c++11"
+        opt_flags = " -O3 -march=native -g"
+    else:
+        if int(conf.env['CC_VERSION'][0]+conf.env['CC_VERSION'][1]) < 47:
+            common_flags = "-Wall -std=c++0x"
+        else:
+            common_flags = "-Wall -std=c++11"
+            opt_flags = " -O3 -march=native -g"
+            
 
 def build(bld):
 
-    libs = 'EIGEN3 BOOST BOOST_UNIT_TEST_FRAMEWORK  BOOST_TIMER TBB'
+    libs = 'DART  EIGEN BOOST BOOST_UNIT_TEST_FRAMEWORK  BOOST_TIMER TBB HEXAPOD_DART_SIMU HEXAPOD_CONTROLLER'
     
     print ("Entering directory `" + os.getcwd() + "/modules/'")
     #test_map_elite = bld.new_task_gen('cxx', 'program')
@@ -54,20 +90,29 @@ def build(bld):
     #test_map_elite.unit_test = 1
 
 
-    model = bld.new_task_gen('cxx', 'staticlib')
-    model.source = 'arm_hori.cpp'
-    model.includes = '. ../../'
-    model.target = 'robot'
-    model.uselib = libs
-
+    bld.program(features='cxx cxxstlib',
+                source='arm_hori.cpp',
+                includes='. .. ../../',
+                target='robot',
+                uselib=libs)
+                
     sferes.create_variants(bld,
                            source = 'scenario_arm.cpp',
-                           uselib_local = 'sferes2 robot',
+                           use = 'sferes2 robot',
                            uselib = libs,
                            target = 'scenario_arm',
                            json = '',
-                           variants = ['GRID RANDOM', 'GRID FITNESS', 'GRID NOVELTY', 'GRID CURIOSITY', 
-                                       'ARCHIVE RANDOM','ARCHIVE FITNESS','ARCHIVE NOVELTY','ARCHIVE CURIOSITY',])
+                           variants = ['GRID RANDOM', 'GRID FITNESS', 'GRID NOVELTY', 'GRID CURIOSITY','GRID NOSELECTION', 'GRID POPFITNESS', 'GRID POPNOVELTY', 'GRID POPCURIOSITY', 
+                                       'ARCHIVE RANDOM','ARCHIVE FITNESS','ARCHIVE NOVELTY','ARCHIVE CURIOSITY'])
+
+    sferes.create_variants(bld,
+                           source = 'scenario_hexa_turn.cpp',
+                           use = 'sferes2',
+                           uselib = libs,
+                           target = 'scenario_hexa_turn',
+                           json = '',
+                           variants = ['GRID RANDOM',
+                                       'ARCHIVE RANDOM'])
 
 
 

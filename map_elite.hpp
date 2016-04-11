@@ -113,94 +113,88 @@ namespace ea
     void random_pop()
     {
       parallel::init();
-      this->_pop.resize(Params::pop::init_size);
-      BOOST_FOREACH(boost::shared_ptr<Phen>&indiv, this->_pop)
+      _parents.resize(Params::pop::size);
+      BOOST_FOREACH(boost::shared_ptr<Phen>&indiv, this->_parents)
         {
 	  indiv = boost::shared_ptr<Phen>(new Phen());
 	  indiv->random();
         }
-      this->_eval_pop(this->_pop, 0, this->_pop.size());
-      BOOST_FOREACH(boost::shared_ptr<Phen>&indiv, this->_pop)
+      this->_eval_pop(this->_parents, 0, this->_parents.size());
+      BOOST_FOREACH(boost::shared_ptr<Phen>&indiv, this->_parents)
 	_aggreg.add_to_archive(indiv, indiv);
+      
+      _offspring.resize(Params::pop::size);
+      BOOST_FOREACH(boost::shared_ptr<Phen>&indiv, this->_offspring)
+        {
+	  indiv = boost::shared_ptr<Phen>(new Phen());
+	  indiv->random();
+        }
+
+      this->_eval_pop(this->_offspring, 0, this->_offspring.size());
+      BOOST_FOREACH(boost::shared_ptr<Phen>&indiv, this->_offspring)
+	_aggreg.add_to_archive(indiv, indiv);
+
       _aggreg.update();
       
     }
 
     void epoch()
     {
-
-      {
-	//boost::timer::auto_cpu_timer t;
-        this->_pop.clear();
-	_aggreg.get_full_content(this->_pop);
-	_select.init(this->_pop);
-	
-	//std::cout<<"init pop and select"<<std::endl;
-      }
-
+      this->_pop.clear();
+      _aggreg.get_full_content(this->_pop);
       
-      {
-	//boost::timer::auto_cpu_timer t;
-	_ptmp.clear();
-	_p_parents.clear();
-	_added.clear();
-	
-        for (size_t i = 0; i < Params::pop::size/2; ++i)
-        {
-            indiv_t p1 = _select();
-            indiv_t p2 = _select();
-            boost::shared_ptr<Phen> i1, i2;
-            p1->cross(p2, i1, i2);
-            i1->mutate();
-            i2->mutate();
-            i1->develop();
-            i2->develop();
-            _ptmp.push_back(i1);
-            _ptmp.push_back(i2);
-            _p_parents.push_back(p1);
-            _p_parents.push_back(p2);
-	 }
-	//std::cout<<"select and mut"<<std::endl;
-      }
-       
-	{
-	  //boost::timer::auto_cpu_timer t;
-        this->_eval_pop(_ptmp, 0, _ptmp.size());
-	//std::cout<<"eval pop"<<std::endl;
+      _parents.resize(Params::pop::size);
+      _select(_parents,*this);
+      
+      //CLEAN OFFSPRING AFTER SELECT as it can be used by Select
+      _offspring.clear();
+      _added.clear();
+      
+      std::vector<size_t> a;
+      misc::rand_ind(a, _parents.size());
+      for (size_t i = 0; i < Params::pop::size; i+=2)                                                                                                                                        
+	{	    
+	  boost::shared_ptr<Phen> i1, i2;
+	  _parents[i]->cross(_parents[i+1], i1, i2);
+	  i1->mutate();
+	  i2->mutate();
+	  i1->develop();
+	  i2->develop();
+	  _offspring.push_back(i1);
+	  _offspring.push_back(i2);
 	}
-	{
-	  //boost::timer::auto_cpu_timer t;
-        assert(_ptmp.size() == _p_parents.size());
-	_added.resize(_ptmp.size());
-        for (size_t i = 0; i < _ptmp.size(); ++i)
-	  _added[i]=_aggreg.add_to_archive(_ptmp[i], _p_parents[i]);
-	//std::cout<<"add to archive"<<std::endl;
-	}
-	{
-	  //boost::timer::auto_cpu_timer t;
-	  _aggreg.update();
-	  //std::cout<<"update nov"<<std::endl;
-	}
+      
+      this->_eval_pop(_offspring, 0, _offspring.size());
+      
+      assert(_offspring.size() == _parents.size());
+      _added.resize(_offspring.size());
+      for (size_t i = 0; i < _offspring.size(); ++i)
+	_added[i]=_aggreg.add_to_archive(_offspring[i], _parents[i]);
+      
+      _aggreg.update();
+      
     }
 
 
 
-        template<typename I>
+    template<typename I>
     point_t get_point(const I& indiv) const
     {
-            return _aggreg.get_point(indiv);
+      return _aggreg.get_point(indiv);
     }
+    
+    const Aggreg& aggreg()const {return _aggreg;}
 
-    const Aggreg&  aggreg()const {return _aggreg;}
-    const pop_t& ptmp()const {return _ptmp;}
-    const pop_t& p_parents()const {return _p_parents;}
+    const pop_t& pop()const {return this->_pop;}
+    const pop_t& offspring()const {return _offspring;}
+    const pop_t& parents()const {return _parents;}
     const std::vector<bool>& added()const {return _added;}
     protected:
     
     Select _select;
     Aggreg _aggreg;
     
-    pop_t _ptmp, _p_parents;
+    pop_t _offspring, _parents;
     std::vector<bool> _added;
 };
 }

@@ -136,8 +136,10 @@ SFERES_STAT(Map, Stat)
             //boost::array<typename array_t::index, behav_dim> idx = posinarray;
             if (*i)
             {
-	      behav_index_t idx = ea.aggreg().getindexarray(array, i);
-                assert(array(idx)->fit().value() == (*i)->fit().value());
+	      behav_index_t idx = ea.aggreg().get_index(*i);
+	      //behav_index_t idx = ea.aggreg().getindexarray(array, i);
+	      assert(array(idx)->fit().value() == (*i)->fit().value());
+
                 if(p_array(idx))
                 {
                     for(size_t dim = 0; dim < behav_dim; ++dim)
@@ -195,8 +197,9 @@ SFERES_STAT(Map, Stat)
 
             if (*i)
             {
-	      behav_index_t posinarray = ea.aggreg().getindexarray(array, i);
-                assert(array(posinarray)->fit().value() == (*i)->fit().value());
+	      //behav_index_t posinarray = ea.aggreg().getindexarray(array, i);
+	      behav_index_t posinarray = ea.aggreg().get_index(*i);
+	      assert(array(posinarray)->fit().value() == (*i)->fit().value());
 
                 //boost::array<typename array_t::index, behav_dim> idx = posinarray; //: error: ‘this’ is not a constant expression
                 //../modules/map_elite/stat_map.hpp:186:66: note: in template argument for type ‘long unsigned int’ ???

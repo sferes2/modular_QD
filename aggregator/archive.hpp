@@ -41,6 +41,7 @@ namespace sferes
 	if (_archive.size()<Params::nov::k || _dist(get_nearest(i1,_archive,false)->fit().desc(), i1->fit().desc()) > Params::nov::l) //ADD because new
 	  {
 	    _add(i1);
+	    parent->fit().set_curiosity(parent->fit().curiosity()+1);
 	    return true;
 	  }
 	else 
@@ -49,8 +50,10 @@ namespace sferes
 	    get_knn(i1, _archive, 2, neigh_current, false); //Be careful, the first one referes to nn
 	    if(_dist(i1->fit().desc(), neigh_current[1]->fit().desc())  < (1-Params::nov::eps)*Params::nov::l)//too close the second NN -- this works better
 	    //if(_dist(i1->fit().desc(), neigh_current[1]->fit().desc())  < Params::nov::l)//too close the second NN
-	      return false;    
-
+	      {
+		parent->fit().set_curiosity(parent->fit().curiosity()-0.5);
+		return false;    
+	      }
 	    indiv_t nn=neigh_current[0];
 
 	    std::vector<double> score_cur(2,0), score_nn(2,0);
@@ -63,24 +66,17 @@ namespace sferes
 	    score_cur[1] = get_novelty( nn , neigh_current.begin()++, neigh_current.end());
 	    score_nn[1] = get_novelty( nn , _archive);
 	    
-
-	    //Comput sum dists
-	    /*score_nn[2]= - get_sum_dist_kppn(nn, _archive, 1 Params::ea::behav_dim, true); //should be negate to optimise all the score.
-	    if(Params::ea::behav_dim > Params::nov::k){
-	      assert(false); //TODO
-	    }
-	    else{
-	      typename pop_t::iterator it= (++neigh_current.begin());
-	      for(int i =0;i<Params::ea::behav_dim; i++)
-		{
-		  score_cur[2] -= _dist((*it)->fit().desc(), i1->fit().desc());
-		  it++;
-		  }
-	      
-		  }*/
-	    //std::cout<<score_cur[0]<<"  "<<score_cur[1]<<"  "<<score_cur[2]<<" : "<< (1-sign(score_nn[0])*Params::nov::eps)*score_nn[0]<<"  "<<(1-sign(score_nn[1])*Params::nov::eps)*score_nn[1]<<"  "<<(1-sign(score_nn[2])*Params::nov::eps)*score_nn[2]<<" : "<<std::endl;
-	    //std::cout<<score_cur[0]<<"  "<<score_cur[1]<<" : "<< (1-sign(score_nn[0])*Params::nov::eps)*score_nn[0]<<"  "<<(1-sign(score_nn[1])*Params::nov::eps)*score_nn[1]<<"  "<<std::endl;
-	    
+	    //TEST
+	    int score=0;     
+            
+	    if((score_cur[0] >= (1-sign(score_nn[0])*Params::nov::eps)*score_nn[0] && score_cur[1] >= (1-sign(score_nn[1])*Params::nov::eps)*score_nn[1] ) &&
+	       ((score_cur[0]-score_nn[0])*std::abs(score_nn[1])>-(score_cur[1]-score_nn[1])*std::abs(score_nn[0]))) //add if significatively better on one objective
+	      {
+		_replace(nn,i1);
+		parent->fit().set_curiosity(parent->fit().curiosity()+1);
+		return true;
+	      }
+	    //-------
 	    //THIS WORKS as well but less
 	    /*int score=0;     
             
@@ -90,78 +86,28 @@ namespace sferes
 		return true;
 		}*/
 	    //-------
-
 	    // THIS WORKS--------  TO STAY IN THE ARCHIVE YOU NEED TO epsilon dominate! (kind of)
-	    int score=0;
+	    /*int score=0;
 	    for(int i =0;i<score_cur.size(); i++){
 	      if(score_cur[i] < (1-sign(score_nn[i])*Params::nov::eps)*score_nn[i] )
 	      return false;//nothing below the epsilon in one obj
 	      if(score_cur[i] >=score_nn[i] )
 		score++;
 	    }
-	    
 	    if(score>=1)//if better on at least 1 objective
 	      {
 		//std::cout<<"replace"<<std::endl;
 		_replace(nn,i1);
 		return true;
 	      }
-	    
-	    //---------------
-
-	    /*indiv_t nn=get_nearest(i1,_archive, false); //Here we don't omit the query point because i1 is not in the archive
-	    pop_t neigh_nn, neigh_current;
-	    get_knn(nn, _archive, 2, neigh_nn, true); //here nn is in the archive
-	    get_knn(i1, _archive, 3, neigh_current, false); //Be careful, the first one referes to nn
-	    
-	    double dnn1=_dist(nn->fit().desc(), neigh_nn[0]->fit().desc());
-	    double dnn2=_dist(nn->fit().desc(), neigh_nn[1]->fit().desc());
-	    double diff_nn=std::abs(dnn1-dnn2);
-	    double sum_nn=dnn1+dnn2;
-	    
-	    double dcur0=_dist(i1->fit().desc(), neigh_current[0]->fit().desc()); //distance according to the individual that may be potentially replaced 
-	    double dcur1=_dist(i1->fit().desc(), neigh_current[1]->fit().desc());
-	    double dcur2=_dist(i1->fit().desc(), neigh_current[2]->fit().desc());
-	    double diff_current=std::abs(dcur1-dcur2);
-	    double sum_cur=dcur1+dcur2;*/
-
-	    //if(dcur1<(1-Params::nov::eps)*Params::nov::l)//too close from existing inviduals.
-	    // return false;
-
-
-	    /*  if(get_novelty( i1 , _archive) >=get_novelty( nn , _archive)   && nn->fit().value() < i1->fit().value())//the new one has a better performance.                                                                                   
-		//WRONG You need to remove nn when computing nov i1
-	      _replace(nn,i1);  
 	    */
-
-	    /*    if((get_novelty( i1 , _archive) >(1-Params::nov::eps)*get_novelty( nn , _archive)   && i1->fit().value() > nn->fit().value()) ||
-	       (get_novelty( i1 , _archive) >                     get_novelty( nn , _archive)   && i1->fit().value() > (1-nn->fit().value()*Params::nov::eps/std::abs(nn->fit().value()))*nn->fit().value()) )
-	       _replace(nn,i1);*/
-
-	    /*if(dcur0<Params::nov::eps*Params::nov::l)// the two individuals are in almost the same location.
-	      {
-		if(nn->fit().value() < i1->fit().value())//the new one has a better performance.
-		  _replace(nn,i1);
-	      }
-	    else
-	      {
-		if(diff_current-diff_nn  <  - Params::nov::eps*Params::nov::l/2  && sum_cur-sum_nn< - Params::nov::eps*Params::nov::l*2)// if the new indiv if significantly placed better.
-		  _replace(nn,i1);
-		else if(diff_current-diff_nn  <  - Params::nov::eps*Params::nov::l/2  && std::abs(sum_cur-sum_nn)< Params::nov::eps*Params::nov::l*2)// if the new indiv if significantly placed better.
-		  if(nn->fit().value() < i1->fit().value())//the new one has a better performance. 
-		    _replace(nn,i1);
-		else if(std::abs(diff_current-diff_nn)<Params::nov::eps*Params::nov::l/2 && sum_cur-sum_nn< - Params::nov::eps*Params::nov::l*2)// if the two individuals are equally placed then we check which one is the more compact 
-		  _replace(nn,i1);
-		  else if(std::abs(diff_current-diff_nn)<Params::nov::eps*Params::nov::l/2 && std::abs(sum_cur-sum_nn)< Params::nov::eps*Params::nov::l*2)// The position is very similar ?? Should we test directly if nn is very close to current?
-		    if(nn->fit().value() < i1->fit().value())//the new one has a better performance. 
-		      _replace(nn,i1);
-		      }*/
-	    return false;  
+	    //---------------
+	    else{
+	      parent->fit().set_curiosity(parent->fit().curiosity()-0.5);
+	      return false;  
+	    }
 	  }
-	
-
-	return false;
-      
+	      
       }
 
 

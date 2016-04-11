@@ -64,6 +64,8 @@ namespace sferes
         double archive_mean = 0.0f;
         double archive_max = 0.0f;
         double sum_novelty = 0.0f;
+	double mean_novelty = 0.0f;
+        double var_novelty = 0.0f;
 	double sum_quality = 0.0f;
 
 	for(auto it = ea.aggreg().archive().begin(); it != ea.aggreg().archive().end(); ++it)
@@ -77,8 +79,14 @@ namespace sferes
 	  }
             
         archive_mean /= archive_size;
-        
-        ofs << ea.gen() << " " << archive_size << " " << archive_mean << " " << archive_max << " " << sum_novelty <<  " " << sum_quality << std::endl;
+	mean_novelty /= archive_size;
+        for(auto it = ea.aggreg().archive().begin(); it != ea.aggreg().archive().end(); ++it)
+          {
+	    var_novelty+=std::pow((ea.aggreg().get_novelty(it->second,ea.aggreg().archive()) - mean_novelty),2);
+	  }
+	var_novelty /= archive_size;
+
+        ofs << ea.gen() << " " << archive_size << " " << archive_mean << " " << archive_max << " " << sum_novelty <<  " " << sum_quality <<   " " << var_novelty<<std::endl;
       }
 
 

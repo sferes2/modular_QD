@@ -50,7 +50,7 @@ namespace sferes
 
       // TODO CLEAN THIS MESS. one method with proper usage...
       //-----------------------------------------------
-      long int getindex(const array_t & m, const indiv_t* requestedElement, const unsigned short int direction) const
+      /*long int getindex(const array_t & m, const indiv_t* requestedElement, const unsigned short int direction) const
       {
         int offset = requestedElement - m.origin();
         return (offset / m.strides()[direction] % m.shape()[direction] +  m.index_bases()[direction]);
@@ -65,7 +65,7 @@ namespace sferes
 	  }
 	
         return _index;
-      }
+	}*/
       
       
       
@@ -129,11 +129,39 @@ namespace sferes
 	
       }
 
-      //template<int NumRanges, int NumDims>
-      //    typename array_t::multi_array_base::template index_gen<NumRanges+1,NumDims+1> recursive_call(typename array_t::multi_array_base::template index_gen<NumRanges,NumDims> test){return test[index_range_t(2-1,2+1)];}
-      //template < typename T2>
-      //typename std::result_of<decltype(&T2::operator[])&(index_range_t)>::type recursive_call(T2 t, int i, int val){return t[index_range_t(val-1,val+1)];}
       
+      void update(){_update_novelty();}
+
+
+    
+
+    const array_t& archive() const { return _array; }
+    const array_t& parents() const { return _array_parents; }
+
+    protected:
+
+    template<typename I>
+    float _dist_center(const I& indiv)
+    {
+        /* Returns distance to center of behavior descriptor cell */
+        float dist = 0.0;
+        point_t p = get_point(indiv);
+        for(size_t i = 0; i < Params::ea::behav_shape_size(); ++i)
+            dist += pow(p[i] - (float)round(p[i] * (float)(behav_shape[i] - 1))/(float)(behav_shape[i] - 1), 2);
+
+        dist=sqrt(dist);
+        return dist;
+    }
+      
+
+      void _update_novelty(){
+      
+	tbb::parallel_for( tbb::blocked_range<indiv_t*>(_array.data(),_array.data() + _array.num_elements()), 
+			   Par_novelty<Map<Phen,Params> >(*this));
+      }
+
+
+
 
       // Functor to iterate over a Boost MultiArray concept instance.
       template<typename T, typename V, size_t Dimensions = T::dimensionality>
@@ -196,64 +224,8 @@ namespace sferes
 	return ngbh;
       }
 
-      
-      void update(){_update_novelty();}
-
-	/*for(const indiv_t* indiv = _array.data(); indiv < (_array.data() + _array.num_elements()); ++indiv)
-	    if(*indiv)
-	      {
-		behav_index_t ind = this->get_index(*indiv);
-		index_gen_t indix;
-		int i=0;
-		for(auto it=indix.ranges_.begin();it!=indix.ranges_.end();it++)
-		  {
-		    *it=index_range_t(std::max((int)ind[i]-(int)Params::nov::deep,0),std::min(ind[i]+Params::nov::deep+1,(size_t) behav_shape[i]-1));//bound! so stop at id[i]+2-1
-		    i++;
-		  }
-		myview_t myview=  _array[ indix ];
-		
-		int count =0;
-		
-		std::vector<indiv_t> neigh;
-		iterate(myview,neigh);
-		(*indiv)->fit().set_novelty(-(double)neigh.size());
-		
-		
-		}*/
-	  
-      //}
-
-
-    template<typename I>
-    float _dist_center(const I& indiv)
-    {
-        /* Returns distance to center of behavior descriptor cell */
-        float dist = 0.0;
-        point_t p = get_point(indiv);
-        for(size_t i = 0; i < Params::ea::behav_shape_size(); ++i)
-            dist += pow(p[i] - (float)round(p[i] * (float)(behav_shape[i] - 1))/(float)(behav_shape[i] - 1), 2);
-
-        dist=sqrt(dist);
-        return dist;
-    }
-
-    
-
-    const array_t& archive() const { return _array; }
-    const array_t& parents() const { return _array_parents; }
-
-    protected:
-
-      void _update_novelty(){
-      
-	tbb::parallel_for( tbb::blocked_range<indiv_t*>(_array.data(),_array.data() + _array.num_elements()), 
-			   Par_novelty<Map<Phen,Params> >(*this));
-      }
-
-
 
       array_t _array;
-      //array_t _prev_array;
       array_t _array_parents;
       
     };

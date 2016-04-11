@@ -32,6 +32,9 @@
 //| The fact that you are presently reading this means that you have
 //| had knowledge of the CeCILL license and that you accept its terms.
 
+
+//#define NO_PARALLEL
+
 #include <iostream>
 #include <cmath>
 
@@ -44,6 +47,7 @@
 
 #include <sferes/eval/parallel.hpp>
 #include <sferes/gen/evo_float.hpp>
+#include <sferes/gen/sampled.hpp>
 #include <sferes/phen/parameters.hpp>
 #include <sferes/modif/dummy.hpp>
 #include <sferes/run.hpp>
@@ -56,7 +60,7 @@
 #include "stat_selection.hpp"
 
 
-#include "arm_hori.hpp"
+#include <hexapod_dart/hexapod_dart_simu.hpp>
 
 /*#define NO_MPI
 #ifdef GRAPHIC
@@ -92,70 +96,199 @@ struct Params
     {
         /*SFERES_CONST size_t res_x = 256;
       SFERES_CONST size_t res_y = 256;*/
-
-        SFERES_CONST size_t behav_dim = 2;
-        SFERES_ARRAY(size_t, behav_shape, 128, 128);
-
+      
+      SFERES_CONST size_t behav_dim = 2;
+      SFERES_ARRAY(size_t, behav_shape, 128, 128);
+      
     };
     struct pop
     {
-        // number of initial random points
-        //SFERES_CONST size_t init_size = 100;
-        // size of a batch
-        SFERES_CONST size_t size = 200;
-        SFERES_CONST size_t nb_gen = 50001;
-        SFERES_CONST size_t dump_period = 1000;
+      // number of initial random points
+      //SFERES_CONST size_t init_size = 100;
+      // size of a batch
+      SFERES_CONST size_t size = 200;
+      SFERES_CONST size_t nb_gen = 50001;
+      SFERES_CONST size_t dump_period = 100;
     };
     struct parameters
     {
-        SFERES_CONST float min = -1;
+        SFERES_CONST float min = 0;
         SFERES_CONST float max = 1;
     };
-    struct evo_float
-    {
-        SFERES_CONST float cross_rate = 0.25f;
-        SFERES_CONST float mutation_rate = 0.1f;
-        SFERES_CONST float eta_m = 10.0f;
-        SFERES_CONST float eta_c = 10.0f;
-        SFERES_CONST mutation_t mutation_type = polynomial;
-        SFERES_CONST cross_over_t cross_over_type = sbx;
-    };
+
+  struct sampled
+  {
+    SFERES_ARRAY(float, values,0,0.25,0.5,0.75,1)
+    SFERES_CONST float mutation_rate=0.05f;
+    SFERES_CONST float cross_rate = 0.00f;
+    SFERES_CONST bool ordered = true;
+  };
 
 };
 
 
+namespace global {
+  std::shared_ptr<hexapod_dart::Hexapod> robot;
+  std::vector<int> brk;
+  std::string filename;
+}
 
 FIT_MAP(ArmFit)
 {
     public:
     template<typename Indiv>
-    void eval(Indiv& ind)
+      void eval(Indiv& ind, bool print=false)
     {
-    
-      Eigen::VectorXd angle(ind.size());
+      _dead=false;
+      std::vector<double> ctrl(ind.size());
       for (size_t i = 0; i < ind.size(); ++i)
-	angle[i] = ind.data(i)*M_PI/2;
-      this->_value = - sqrt((angle.array()-angle.mean()).square().mean());
-      Eigen::Vector3d pos=robot::Arm::forward_model(angle);
-      float L=robot::Arm::max_length();
-      std::vector<float> data = {(float) (pos[0]+L)/(2*L), (float) (pos[1]+L)/(2*L)};
-      //this->set_desc(ind.gen().data(0), ind.gen().data(1));
-      this->set_desc(data);
+	{
+	  //std::cout<<i<<":"<<ind.data(i)<<"   ";
+	  ctrl[i] = ind.data(i);
+	}
+      //std::cout<<std::endl;
+
+      auto local_robot=global::robot->clone();
+      //std::shared_ptr<hexapod_dart::Hexapod> local_robot = std::make_shared<hexapod_dart::Hexapod>(global::filename, global::brk);
+      
+      using desc_t = boost::fusion::vector<hexapod_dart::descriptors::DutyCycle, hexapod_dart::descriptors::RotationTraj>;
+      hexapod_dart::HexapodDARTSimu<hexapod_dart::desc<desc_t>> simu(ctrl, local_robot);
+      simu.run(3);
+
+      if(simu.covered_distance()<-1000)
+	{
+	  _dead=true;
+	  return;
+	}
+      else
+	{
+	  //you have to compute the desc before call quality_orientation
+	  _pos=simu.final_pos();
+       	  float L=1;//1 meter -> area radius 
+	  std::vector<float> data = {(float) (_pos[0]+L)/(2*L), (float) (_pos[1]+L)/(2*L)};
+	  this->set_desc(data);
+
+	  if(print)
+	    {
+	      std::cout<<"pos: "<<_pos.transpose()<<std::endl;
+	      std::cout<<"data: "<<data[0]<<" "<<data[1]<<std::endl;
+	      
+
+	    }
+	  
+	  this->_value = _quality_orient(simu,print);
+
+	}
+      
+    //std::cout << simu.covered_distance() << " " << simu.arrival_angle() << std::endl;
+    //std::cout << simu.energy() << std::endl;
+    //std::vector<double> v;
+    //simu.get_descriptor<hexapod_dart::descriptors::DutyCycle>(v);
+    //for (size_t i = 0; i < v.size(); i++) {
+    //    std::cout << v[i] << " ";
+    //}
+    //std::cout << std::endl;
+    //std::vector<double> vv;
+    //simu.get_descriptor<hexapod_dart::descriptors::RotationTraj>(vv);
+    //for (size_t i = 0; i < vv.size(); i++) {
+    //    std::cout << vv[i] << " ";
+    //}
+    //std::cout << std::endl;
+
+    }
+    bool dead() {return _dead;}
+ private:
+    Eigen::Vector3d _pos;
+    template<typename Simu_t>
+      float _quality_orient(const Simu_t& simu, bool print )const
+    {
+      float direction;
+      float B= sqrt((this->_pos[0]/2)*(this->_pos[0]/2)+(this->_pos[1]/2)*(this->_pos[1]/2));
+      float alpha=atan2(this->_pos[0],-this->_pos[1]);
+      float A= B/cos(alpha);
+
+      float beta=atan2(this->_pos[0],-this->_pos[1]-A);
+
+      if(-this->_pos[1]>=0)
+	direction=beta-M_PI;
+      else
+	direction=beta;
+      while(direction<-M_PI)
+	direction+=2*M_PI;
+      while(direction>M_PI)
+	direction-=2*M_PI;
+
+      direction=std::round(direction*100)/100.0*180/M_PI;
+
+      assert(direction>-180);
+      assert(direction<180);
+      float arrival=simu.arrival_angle()*180/M_PI;
+      assert(arrival>-180);
+      assert(arrival<180);
+      if(print)
+	{
+	  std::cout<<"direction: "<<direction<<std::endl;
+	  std::cout<<"arrival: "<<arrival<<std::endl;
+	  std::cout<<"error: "<<- std::abs(direction-arrival)<<std::endl;
+	  
+	}
+
+
+      return - std::abs(direction-arrival);
+      
+
     }
 
-    bool dead() {return false;}
+    bool _dead;
+
 };
 
-int main()
+    using namespace sferes;
+    typedef ArmFit<Params> fit_t;
+    typedef gen::Sampled<36, Params> gen_t;
+    typedef phen::Parameters<gen_t, fit_t, Params> phen_t;
+
+void run_behavior(int narg, char ** varg)
+{
+  std::cout<<"run behavior"<<std::endl;
+  phen_t indiv;
+  assert(narg>=indiv.gen().size()+2);
+  std::cout<<"narg "<<narg <<" indiv.gen "<<  indiv.gen().size()<<std::endl;
+  for (size_t i = 0; i < indiv.gen().size(); ++i)
+    {
+      std::cout<<i<<":"<<varg[i+2]<<"   ";
+      indiv.gen().set_data(i,std::atof(varg[i+2])*4);
+      std::cout<<indiv.gen().data(i)<<"   "<<std::endl;
+    }
+  
+  indiv.develop();
+  indiv.fit().eval(indiv,true);
+}
+
+
+int main(int narg, char ** varg)
 {
     srand (time(NULL));
   
 
-    using namespace sferes;
 
-    typedef ArmFit<Params> fit_t;
-    typedef gen::EvoFloat<8, Params> gen_t;
-    typedef phen::Parameters<gen_t, fit_t, Params> phen_t;
+
+
+    if(narg<2)
+    {
+      std::cout<< "Please provide path to urdf file"<<std::endl;
+      return -1;
+    }
+
+      
+     global::brk = {};
+     global::filename =std::string(varg[1]);
+     global::robot = std::make_shared<hexapod_dart::Hexapod>(varg[1], global::brk);
+     if(narg>2){
+      run_behavior(narg, varg);
+      return 0;
+     }
+
     typedef eval::Parallel<Params> eval_t;
     /*#ifndef NO_PARALLEL
     typedef eval::Parallel<Params> eval_t;
@@ -168,15 +301,19 @@ int main()
 
     typedef modif::Dummy<> modifier_t;
 
+
+
 #ifdef GRID
     typedef aggregator::Map<phen_t, Params> aggreg_t;
     typedef boost::fusion::vector<stat::Map<phen_t, Params>, stat::BestFit<phen_t, Params> > stat_t;
 #endif
+
 #ifdef ARCHIVE
     typedef aggregator::Archive<phen_t, Params> aggreg_t;
     typedef boost::fusion::vector<stat::Archive<phen_t, Params> > stat_t;
     //typedef boost::fusion::vector<stat::Archive<phen_t, Params>, stat::Selection<phen_t,Params> > stat_t;
 #endif
+    
 
 
 
@@ -211,4 +348,7 @@ int main()
 
     ea_t ea;
     ea.run();
+
+
+    global::robot.reset();
 }
