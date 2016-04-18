@@ -78,7 +78,7 @@ def configure(conf):
 
 def build(bld):
 
-    libs = 'DART  EIGEN BOOST BOOST_UNIT_TEST_FRAMEWORK  BOOST_TIMER TBB HEXAPOD_DART_SIMU HEXAPOD_CONTROLLER'
+    libs = 'DART  DART_GRAPHIC EIGEN BOOST BOOST_UNIT_TEST_FRAMEWORK  BOOST_TIMER TBB HEXAPOD_DART_SIMU HEXAPOD_CONTROLLER'
     
     print ("Entering directory `" + os.getcwd() + "/modules/'")
     #test_map_elite = bld.new_task_gen('cxx', 'program')
@@ -112,7 +112,7 @@ def build(bld):
                            target = 'scenario_hexa_turn',
                            json = '',
                            variants = ['GRID RANDOM',
-                                       'ARCHIVE RANDOM'])
+                                       'ARCHIVE RANDOM GRAPHIC', 'ARCHIVE RANDOM'])
 
 
 

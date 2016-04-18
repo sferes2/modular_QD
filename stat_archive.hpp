@@ -44,8 +44,10 @@ namespace sferes
 	    for(size_t dim = 0; dim < it->second->fit().desc().size(); ++dim)
 	      ofs << it->second->fit().desc()[dim] << " ";
 	    //ofs << " " << array(idx)->fit().value() << std::endl;
-	    ofs << " " << it->second->fit().value() << std::endl;
-	    
+	    ofs << " " << it->second->fit().value() << "         ";
+	    for(size_t dim = 0; dim < it->second->size(); ++dim)
+              ofs << it->second->data(dim) << " ";
+	    ofs<<std::endl;
             ++offset;
 	  }
       }

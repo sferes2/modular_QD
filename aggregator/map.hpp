@@ -105,9 +105,33 @@ namespace sferes
 	  
       }
 
-      
+bool add_to_archive(indiv_t i1, indiv_t parent){
+	if( _add_to_archive(i1,parent))
+	  {
+	    parent->fit().set_curiosity(parent->fit().curiosity()+1);
+	    return true;
+	  }
+	else
+	  {
+	    parent->fit().set_curiosity(parent->fit().curiosity()-0.5);
+	    return false;
+	}
+      }
+            
 
-      bool add_to_archive(indiv_t i1, indiv_t parent)
+      
+      
+      void update(){_update_novelty();}
+
+
+    
+
+    const array_t& archive() const { return _array; }
+    const array_t& parents() const { return _array_parents; }
+
+    protected:
+      
+      bool _add_to_archive(indiv_t i1, indiv_t parent)
       {
         if(i1->fit().dead())
 	  return false;
@@ -121,24 +145,12 @@ namespace sferes
 	  {
             _array(behav_pos) = i1;
             _array_parents(behav_pos) = parent;
-	    parent->fit().set_curiosity(parent->fit().curiosity()+1);
-            return true;
+	    return true;
 	  }
-	parent->fit().set_curiosity(parent->fit().curiosity()-0.5);
-        return false;
+	return false;
 	
       }
 
-      
-      void update(){_update_novelty();}
-
-
-    
-
-    const array_t& archive() const { return _array; }
-    const array_t& parents() const { return _array_parents; }
-
-    protected:
 
     template<typename I>
     float _dist_center(const I& indiv)

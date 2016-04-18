@@ -88,7 +88,7 @@ struct Params
   struct nov{
     SFERES_CONST size_t deep=5;
     SFERES_CONST size_t k=15;
-    SFERES_CONST double l=0.01;
+    SFERES_CONST double l=0.02;
     SFERES_CONST double eps=0.1;
     
   };
@@ -107,8 +107,8 @@ struct Params
       //SFERES_CONST size_t init_size = 100;
       // size of a batch
       SFERES_CONST size_t size = 200;
-      SFERES_CONST size_t nb_gen = 50001;
-      SFERES_CONST size_t dump_period = 100;
+      SFERES_CONST size_t nb_gen = 10001;
+      SFERES_CONST size_t dump_period = 500;
     };
     struct parameters
     {
@@ -158,13 +158,17 @@ FIT_MAP(ArmFit)
       if(simu.covered_distance()<-1000)
 	{
 	  _dead=true;
+	  if(print)
+            {
+	      std::cout<<"DEAD"<<std::endl;
+	    }
 	  return;
 	}
       else
 	{
 	  //you have to compute the desc before call quality_orientation
 	  _pos=simu.final_pos();
-       	  float L=1;//1 meter -> area radius 
+       	  float L=1.5;//1 meter -> area radius 
 	  std::vector<float> data = {(float) (_pos[0]+L)/(2*L), (float) (_pos[1]+L)/(2*L)};
 	  this->set_desc(data);
 

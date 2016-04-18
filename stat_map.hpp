@@ -209,7 +209,12 @@ SFERES_STAT(Map, Stat)
                 for(size_t dim = 0; dim < behav_dim; ++dim)
                     ofs << posinarray[dim] / (float) behav_shape[dim] << " ";
                 //ofs << " " << array(idx)->fit().value() << std::endl;
-                ofs << " " << array(posinarray)->fit().value() << std::endl;
+                ofs << " " << array(posinarray)->fit().value() << "          ";
+		
+		for(size_t dim = 0; dim < array(posinarray)->size(); ++dim)
+		  ofs << array(posinarray)->data(dim) << " ";
+		ofs<<std::endl;
+           
             }
             ++offset;
         }
