@@ -78,7 +78,7 @@ def configure(conf):
 
 def build(bld):
 
-    libs = 'DART  DART_GRAPHIC EIGEN BOOST BOOST_UNIT_TEST_FRAMEWORK  BOOST_TIMER TBB HEXAPOD_DART_SIMU HEXAPOD_CONTROLLER'
+    libs = 'DART  EIGEN BOOST BOOST_UNIT_TEST_FRAMEWORK  BOOST_TIMER TBB HEXAPOD_DART_SIMU HEXAPOD_CONTROLLER'
     
     print ("Entering directory `" + os.getcwd() + "/modules/'")
     #test_map_elite = bld.new_task_gen('cxx', 'program')
@@ -102,8 +102,8 @@ def build(bld):
                            uselib = libs,
                            target = 'scenario_arm',
                            json = '',
-                           variants = ['GRID RANDOM', 'GRID FITNESS', 'GRID NOVELTY', 'GRID CURIOSITY','GRID NOSELECTION', 'GRID POPFITNESS', 'GRID POPNOVELTY', 'GRID POPCURIOSITY', 
-                                       'ARCHIVE RANDOM','ARCHIVE FITNESS','ARCHIVE NOVELTY','ARCHIVE CURIOSITY'])
+                           variants = ['GRID RANDOM',   'GRID FITNESS',   'GRID NOVELTY',   'GRID CURIOSITY',   'GRID NOSELECTION',   'GRID POPFITNESS',   'GRID POPNOVELTY',   'GRID POPCURIOSITY', 
+                                       'ARCHIVE RANDOM','ARCHIVE FITNESS','ARCHIVE NOVELTY','ARCHIVE CURIOSITY','ARCHIVE NOSELECTION','ARCHIVE POPFITNESS','ARCHIVE POPNOVELTY','ARCHIVE POPCURIOSITY'])
 
     sferes.create_variants(bld,
                            source = 'scenario_hexa_turn.cpp',
@@ -111,8 +111,9 @@ def build(bld):
                            uselib = libs,
                            target = 'scenario_hexa_turn',
                            json = '',
-                           variants = ['GRID RANDOM',
-                                       'ARCHIVE RANDOM GRAPHIC', 'ARCHIVE RANDOM'])
+                           variants = ['GRID RANDOM',   'GRID FITNESS',   'GRID NOVELTY',   'GRID CURIOSITY',   'GRID NOSELECTION',   'GRID POPFITNESS',   'GRID POPNOVELTY',   'GRID POPCURIOSITY', 
+                                       'ARCHIVE RANDOM','ARCHIVE FITNESS','ARCHIVE NOVELTY','ARCHIVE CURIOSITY','ARCHIVE NOSELECTION','ARCHIVE POPFITNESS','ARCHIVE POPNOVELTY','ARCHIVE POPCURIOSITY'])
+
 
 
 
