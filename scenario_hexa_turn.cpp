@@ -106,8 +106,8 @@ struct Params
       // number of initial random points
       //SFERES_CONST size_t init_size = 100;
       // size of a batch
-      SFERES_CONST size_t size = 2;
-      SFERES_CONST size_t nb_gen = 1;
+      SFERES_CONST size_t size = 200;
+      SFERES_CONST size_t nb_gen = 10001;
       SFERES_CONST size_t dump_period = 500;
     };
     struct parameters
@@ -129,8 +129,8 @@ struct Params
 
 namespace global {
   std::shared_ptr<hexapod_dart::Hexapod> robot;
-  std::vector<int> brk;
-  std::string filename;
+
+
 }
 
 FIT_MAP(ArmFit)
@@ -285,9 +285,8 @@ int main(int narg, char ** varg)
     }
 
       
-     global::brk = {};
-     global::filename =std::string(varg[1]);
-     global::robot = std::make_shared<hexapod_dart::Hexapod>(varg[1], global::brk);
+    std::vector<int> brk={};
+     global::robot = std::make_shared<hexapod_dart::Hexapod>(varg[1], brk);
      if(narg>2){
       run_behavior(narg, varg);
       return 0;
@@ -340,8 +339,10 @@ int main(int narg, char ** varg)
     typedef ea::MapElite<phen_t, eval_t, stat_t, modifier_t, select_t, aggreg_t, Params> ea_t;
 
     ea_t ea;
+    std::cout<<"start"<<std::endl;
     ea.run();
-
+    std::cout<<"end"<<std::endl;
 
     global::robot.reset();
+    std::cout<<"end"<<std::endl;
 }

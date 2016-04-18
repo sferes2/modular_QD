@@ -62,19 +62,6 @@ def configure(conf):
     conf.check_hexapod_controller()
     conf.check_hexapod_dart_simu()
 
-    if conf.env.CXX_NAME in ["icc", "icpc"]:
-        common_flags = "-Wall -std=c++11"
-        opt_flags = " -O3 -xHost  -march=native -mtune=native -unroll -fma -g"
-    elif conf.env.CXX_NAME in ["clang"]:
-        common_flags = "-Wall -std=c++11"
-        opt_flags = " -O3 -march=native -g"
-    else:
-        if int(conf.env['CC_VERSION'][0]+conf.env['CC_VERSION'][1]) < 47:
-            common_flags = "-Wall -std=c++0x"
-        else:
-            common_flags = "-Wall -std=c++11"
-            opt_flags = " -O3 -march=native -g"
-            
 
 def build(bld):
 

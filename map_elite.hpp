@@ -135,11 +135,12 @@ namespace ea
 	_aggreg.add_to_archive(indiv, indiv);
 
       _aggreg.update();
-      
+
     }
 
     void epoch()
     {
+      std::cout<<"gen "<<this->gen()<<std::endl;
       this->_pop.clear();
       _aggreg.get_full_content(this->_pop);
       
@@ -149,7 +150,9 @@ namespace ea
       //CLEAN OFFSPRING AFTER SELECT as it can be used by Select
       _offspring.clear();
       _added.clear();
-      
+
+      std::cout<<"pop creation "<<std::endl;
+
       std::vector<size_t> a;
       misc::rand_ind(a, _parents.size());
       for (size_t i = 0; i < Params::pop::size; i+=2)                                                                                                                                        
@@ -163,16 +166,18 @@ namespace ea
 	  _offspring.push_back(i1);
 	  _offspring.push_back(i2);
 	}
-      
+      std::cout<<"pop eval "<<std::endl;
       this->_eval_pop(_offspring, 0, _offspring.size());
       
+
+      std::cout<<"storing "<<std::endl;
       assert(_offspring.size() == _parents.size());
       _added.resize(_offspring.size());
       for (size_t i = 0; i < _offspring.size(); ++i)
 	_added[i]=_aggreg.add_to_archive(_offspring[i], _parents[i]);
-      
+      std::cout<<"update "<<std::endl;
       _aggreg.update();
-      
+      std::cout<<"end gen "<<std::endl;
     }
 
 
