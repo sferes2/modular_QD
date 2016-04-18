@@ -168,11 +168,11 @@ int main()
 
     typedef modif::Dummy<> modifier_t;
 
-#ifdef GRID
+#if defined(GRID)
     typedef aggregator::Map<phen_t, Params> aggreg_t;
     typedef boost::fusion::vector<stat::Map<phen_t, Params>, stat::BestFit<phen_t, Params> > stat_t;
-#endif
-#ifdef ARCHIVE
+
+#else // ARCHIVE
     typedef aggregator::Archive<phen_t, Params> aggreg_t;
     typedef boost::fusion::vector<stat::Archive<phen_t, Params> > stat_t;
     //typedef boost::fusion::vector<stat::Archive<phen_t, Params>, stat::Selection<phen_t,Params> > stat_t;
@@ -180,31 +180,23 @@ int main()
 
 
 
-#ifdef NOSELECTION
-    typedef selector::NoSelection<phen_t> select_t;
-#endif
-#ifdef RANDOM
+#if defined(RANDOM)
     typedef selector::Random<phen_t> select_t;
-#endif
-#ifdef FITNESS
+#elif defined(FITNESS)
     typedef selector::ScoreProportionate<phen_t,selector::getFitness> select_t;
-#endif
-#ifdef NOVELTY
+#elif defined(NOVELTY)
     typedef selector::ScoreProportionate<phen_t,selector::getNovelty> select_t;
-#endif
-#ifdef CURIOSITY
+#elif defined(CURIOSITY)
     typedef selector::ScoreProportionate<phen_t,selector::getCuriosity> select_t;
-#endif
-
-
-#ifdef POPFITNESS
+#elif defined(POPFITNESS)
     typedef selector::PopulationBased<phen_t,selector::getFitness> select_t;
-#endif
-#ifdef POPNOVELTY
+#elif defined(POPNOVELTY)
     typedef selector::PopulationBased<phen_t,selector::getNovelty> select_t;
-#endif
-#ifdef POPCURIOSITY
+#elif defined(POPCURIOSITY)
     typedef selector::PopulationBased<phen_t,selector::getCuriosity> select_t;
+#else // NOSELECTION
+    typedef selector::NoSelection<phen_t> select_t;
+
 #endif
 
     typedef ea::MapElite<phen_t, eval_t, stat_t, modifier_t, select_t, aggreg_t, Params> ea_t;
