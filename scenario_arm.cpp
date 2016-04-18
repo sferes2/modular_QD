@@ -104,8 +104,7 @@ struct Params
         // size of a batch
         SFERES_CONST size_t size = 200;
         SFERES_CONST size_t nb_gen = 50001;
-        SFERES_CONST size_t dump_period = -1;
-        SFERES_CONST size_t dump_period_archive = 1000;
+        SFERES_CONST size_t dump_period = 1000;
     };
     struct parameters
     {
