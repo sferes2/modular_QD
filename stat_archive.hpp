@@ -17,7 +17,7 @@ namespace sferes
 	void refresh(const E& ea)
       {
 
-	if (ea.gen() % Params::pop::dump_period == 0)
+	if (ea.gen() % Params::pop::dump_period_archive == 0)
 	  {
 	   _write_archive(std::string("archive_"), ea);
 	   _write_progress(std::string("progress"), ea);

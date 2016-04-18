@@ -63,7 +63,7 @@ SFERES_STAT(Map, Stat)
                 _archive.push_back(p);
             }*/
 
-        if (ea.gen() % Params::pop::dump_period == 0)
+        if (ea.gen() % Params::pop::dump_period_archive == 0)
         {
 	  _write_archive(ea.aggreg().archive(), std::string("archive_"), ea);
 	  _write_progress(ea.aggreg().archive(),std::string("progress_archive"), ea);

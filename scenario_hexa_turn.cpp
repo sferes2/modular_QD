@@ -106,9 +106,10 @@ struct Params
       // number of initial random points
       //SFERES_CONST size_t init_size = 100;
       // size of a batch
-      SFERES_CONST size_t size = 200;
-      SFERES_CONST size_t nb_gen = 10001;
-      SFERES_CONST size_t dump_period = 500;
+      SFERES_CONST size_t size = 2;
+      SFERES_CONST size_t nb_gen = 1;
+      SFERES_CONST size_t dump_period = -1;
+      SFERES_CONST size_t dump_period_archive = 500;
     };
     struct parameters
     {
@@ -151,7 +152,7 @@ FIT_MAP(ArmFit)
       auto local_robot=global::robot->clone();
       //std::shared_ptr<hexapod_dart::Hexapod> local_robot = std::make_shared<hexapod_dart::Hexapod>(global::filename, global::brk);
       
-      using desc_t = boost::fusion::vector<hexapod_dart::descriptors::DutyCycle, hexapod_dart::descriptors::RotationTraj>;
+      using desc_t = boost::fusion::vector<>;
       hexapod_dart::HexapodDARTSimu<hexapod_dart::desc<desc_t>> simu(ctrl, local_robot);
       simu.run(3);
 
@@ -308,7 +309,7 @@ int main(int narg, char ** varg)
 
 #if defined(GRID)
     typedef aggregator::Map<phen_t, Params> aggreg_t;
-    typedef boost::fusion::vector<stat::Map<phen_t, Params>, stat::BestFit<phen_t, Params> > stat_t;
+    typedef boost::fusion::vector<stat::Map<phen_t, Params> > stat_t;
 
 #else // ARCHIVE
     typedef aggregator::Archive<phen_t, Params> aggreg_t;

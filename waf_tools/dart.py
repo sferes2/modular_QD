@@ -72,12 +72,12 @@ def check_dart(conf):
 		if assimp_found:
 			more_includes += assimp_check
 		conf.start_msg('Checking for DART libs')
-		res = res and conf.find_file('libdart.dylib', libs_check)
-		res = res and conf.find_file('libdart-core.dylib', libs_check)
+		res = res and conf.find_file('libdart.so', libs_check)
+		res = res and conf.find_file('libdart-core.so', libs_check)
 		conf.end_msg('ok')
 		conf.env.INCLUDES_DART = includes_check + more_includes
 		conf.env.LIBPATH_DART = libs_check
-		conf.env.LIB_DART = ['dart', 'dart-core']
+		conf.env.LIB_DART = ['dart', 'dart-core','dart-utils','dart-utils-urdf']
 		conf.start_msg('DART: Checking for Assimp')
 		if assimp_found:
 			conf.end_msg('ok')
