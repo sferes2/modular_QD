@@ -55,10 +55,6 @@
 
 #include "map_elite.hpp"
 #include "fit_map.hpp"
-#include "stat_map.hpp"
-#include "stat_archive.hpp"
-#include "stat_selection.hpp"
-
 
 #include <hexapod_dart/hexapod_dart_simu.hpp>
 
@@ -274,7 +270,7 @@ int main(int narg, char ** varg)
 {
     srand (time(NULL));
   
-
+    tbb::task_scheduler_init init(20);
 
 
 
@@ -307,14 +303,15 @@ int main(int narg, char ** varg)
 
 #if defined(GRID)
     typedef aggregator::Map<phen_t, Params> aggreg_t;
-    typedef boost::fusion::vector<stat::Map<phen_t, Params> > stat_t;
+    //typedef boost::fusion::vector<stat::Map<phen_t, Params>,stat::Progress<phen_t, Params> > stat_t;
 
 #else // ARCHIVE
     typedef aggregator::Archive<phen_t, Params> aggreg_t;
-    typedef boost::fusion::vector<stat::Archive<phen_t, Params> > stat_t;
+    //typedef boost::fusion::vector<stat::Archive<phen_t, Params>,stat::Progress<phen_t, Params> > stat_t;
     //typedef boost::fusion::vector<stat::Archive<phen_t, Params>, stat::Selection<phen_t,Params> > stat_t;
 #endif
 
+    typedef boost::fusion::vector<stat::Aggregator<phen_t, Params>,stat::Progress<phen_t, Params> > stat_t;
 
 
 #if defined(RANDOM)

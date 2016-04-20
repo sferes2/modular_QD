@@ -51,9 +51,6 @@
 
 #include "map_elite.hpp"
 #include "fit_map.hpp"
-#include "stat_map.hpp"
-#include "stat_archive.hpp"
-#include "stat_selection.hpp"
 
 
 #include "arm_hori.hpp"
@@ -94,7 +91,7 @@ struct Params
       SFERES_CONST size_t res_y = 256;*/
 
         SFERES_CONST size_t behav_dim = 2;
-        SFERES_ARRAY(size_t, behav_shape, 128, 128);
+        SFERES_ARRAY(size_t, behav_shape, 100, 100);
 
     };
     struct pop
@@ -149,7 +146,7 @@ FIT_MAP(ArmFit)
 int main()
 {
     srand (time(NULL));
-  
+    tbb::task_scheduler_init init(20);  
 
     using namespace sferes;
 
@@ -170,15 +167,15 @@ int main()
 
 #if defined(GRID)
     typedef aggregator::Map<phen_t, Params> aggreg_t;
-    typedef boost::fusion::vector<stat::Map<phen_t, Params> > stat_t;
+    //typedef boost::fusion::vector<stat::Map<phen_t, Params>,stat::Progress<phen_t, Params> > stat_t;
 
 #else // ARCHIVE
     typedef aggregator::Archive<phen_t, Params> aggreg_t;
-    typedef boost::fusion::vector<stat::Archive<phen_t, Params> > stat_t;
+    //typedef boost::fusion::vector<stat::Archive<phen_t, Params>,stat::Progress<phen_t, Params> > stat_t;
     //typedef boost::fusion::vector<stat::Archive<phen_t, Params>, stat::Selection<phen_t,Params> > stat_t;
 #endif
 
-
+    typedef boost::fusion::vector<stat::Aggregator<phen_t, Params>,stat::Progress<phen_t, Params> > stat_t;
 
 #if defined(RANDOM)
     typedef selector::Random<phen_t> select_t;

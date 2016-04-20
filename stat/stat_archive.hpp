@@ -20,7 +20,7 @@ namespace sferes
 	if (ea.gen() % Params::pop::dump_period == 0)
 	  {
 	   _write_archive(std::string("archive_"), ea);
-	   _write_progress(std::string("progress"), ea);
+	   //_write_progress(std::string("progress"), ea);
 	  }
 
       }
@@ -51,7 +51,7 @@ namespace sferes
             ++offset;
 	  }
       }
-      template<typename EA>
+      /*      template<typename EA>
 	void _write_progress(const std::string& prefix,
 			     const EA& ea) const
       {
@@ -89,7 +89,7 @@ namespace sferes
 	var_novelty /= archive_size;
 
         ofs << ea.gen() << " " << archive_size << " " << archive_mean << " " << archive_max << " " << sum_novelty <<  " " << sum_quality <<   " " << var_novelty<<std::endl;
-      }
+	}*/
 
 
     };

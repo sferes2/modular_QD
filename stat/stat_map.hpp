@@ -66,7 +66,7 @@ SFERES_STAT(Map, Stat)
         if (ea.gen() % Params::pop::dump_period == 0)
         {
 	  _write_archive(ea.aggreg().archive(), std::string("archive_"), ea);
-	  _write_progress(ea.aggreg().archive(),std::string("progress_archive"), ea);
+	  //	  _write_progress(ea.aggreg().archive(),std::string("progress_archive"), ea);
 #ifdef MAP_WRITE_PARENTS
 	  _write_parents(ea.aggreg().archive(), ea.aggreg().parents(), std::string("parents_"), ea);
 #endif
@@ -231,7 +231,7 @@ SFERES_STAT(Map, Stat)
     }
 
 
-    template<typename EA>
+    /*    template<typename EA>
     void _write_progress(const array_t& array,
                          const std::string& prefix,
                          const EA& ea) const
@@ -277,7 +277,7 @@ SFERES_STAT(Map, Stat)
         mean_dist_center /= archive_size;
 
         ofs << ea.gen() << " " << archive_size << " " << archive_mean << " " << archive_max << " " << mean_dist_center << std::endl;
-    }
+	}*/
 
 
 };
