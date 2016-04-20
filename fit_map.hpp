@@ -66,9 +66,7 @@ namespace sferes
           assert(x.size() == Params::ea::behav_dim);
           for(size_t i = 0; i < x.size(); ++i)
 	    {
-	      if(!(x[i] >= 0.0 && x[i] <= 1.0))
-		std::cout<<"ERROR ASSERT DIMS"<<std::endl;
-              assert(x[i] >= 0.0 && x[i] <= 1.0);
+	      assert(x[i] >= 0.0 && x[i] <= 1.0);
 	    }
           _desc = x;
         }

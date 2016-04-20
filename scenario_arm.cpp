@@ -79,7 +79,7 @@ struct Params
 {
 
   struct nov{
-    SFERES_CONST size_t deep=5;
+    SFERES_CONST size_t deep=3; //7x7
     SFERES_CONST size_t k=15;
     SFERES_CONST double l=0.01;
     SFERES_CONST double eps=0.1;
