@@ -50,17 +50,6 @@ namespace sferes
 	_update_novelty();
       }
     
-
-      static double get_sum_dist_kppn(const indiv_t& indiv, const Tree&  apop, const int K,const bool omit=true)
-      {
-	 pop_t nearest;
-	 get_knn(indiv,apop,K,nearest,omit); //here we omit because indivs are in the archive
-	 // compute the mean distance                                                                                                                                         
-	 double sum = 0.0f;                                                                                                                                                    
-	 BOOST_FOREACH(indiv_t& x, nearest)                                                                                                                   
-	   sum += _dist(x->fit().desc(), indiv->fit().desc());
-	 return sum;
-       }
       
       static indiv_t get_nearest(const indiv_t& indiv, const Tree&  apop, const bool omit_query_point) {
 	typename Tree::key_type q;
@@ -86,7 +75,41 @@ namespace sferes
       }
 
       static double get_novelty(const indiv_t& indiv, const Tree&  apop) {
-	return get_sum_dist_kppn(indiv,apop,Params::nov::k,true)/Params::nov::k;
+	pop_t nearest;
+	get_knn(indiv,apop,Params::nov::k,nearest,true); //here we omit because indivs are in the archive
+	// compute the mean distance                                                                                                                                         
+	//double sum = 0.0f;                                                                                                                                                    
+	//BOOST_FOREACH(indiv_t& x, nearest)                                                                                                                   
+	//  sum += _dist(x->fit().desc(), indiv->fit().desc());
+	//return sum/Params::nov::k;;
+
+	return get_novelty(indiv, nearest.begin(), nearest.end());
+	
+      }
+      static std::pair<double, double> get_nov_and_lq(const indiv_t& indiv, const Tree&  apop)
+      {
+	pop_t nearest;
+        get_knn(indiv,apop,Params::nov::k,nearest,true);
+	
+	return std::pair<double, double> (get_novelty( indiv,nearest.begin(), nearest.end()),
+					  get_lq( indiv,nearest.begin(), nearest.end()));
+	
+      }
+      static double get_lq(const indiv_t& indiv, typename pop_t::iterator begin, typename pop_t::iterator end) 
+      {
+	if(std::distance(begin,end)>Params::nov::k){
+          //NEED to sort                                                                                                                                                            
+          //  std::sort(begin,end,_compare_dist_f(indiv));                                                                                                                          
+          assert(false);
+        }
+	int count =0;
+        typename pop_t::iterator it= begin;
+        for(int i =0;i<Params::nov::k; i++){
+          if((*it)->fit().value() < indiv->fit().value())
+	    count++;
+          it++;
+        }
+        return count;
       }
       static double get_novelty(const indiv_t& indiv, typename pop_t::iterator begin, typename pop_t::iterator end) { 
 	if(std::distance(begin,end)>Params::nov::k){
@@ -106,7 +129,7 @@ namespace sferes
       const Tree& archive() const{return _archive;}
   
     protected:
-bool _add_to_archive(indiv_t i1, indiv_t parent)
+      bool _add_to_archive(indiv_t i1, indiv_t parent)
       {
 	
 	//TODO
@@ -232,8 +255,10 @@ bool _add_to_archive(indiv_t i1, indiv_t parent)
 	{
 	  // for (auto it = r.begin(); it != r.end(); ++it)
 	  //{
-	     double nov= Archive::get_novelty(v.second,_apop);
-	     v.second->fit().set_novelty(nov);
+	  //double nov= Archive::get_novelty(v.second,_apop);
+	  auto res = Archive::get_nov_and_lq(v.second,_apop); 
+	     v.second->fit().set_novelty(res.first);
+	     v.second->fit().set_local_quality(res.second);
 	     //}
 	}
       };

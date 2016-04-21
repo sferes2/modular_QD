@@ -89,8 +89,8 @@ def build(bld):
                            uselib = libs,
                            target = 'scenario_arm',
                            json = '',
-                           variants = ['GRID RANDOM',   'GRID FITNESS',   'GRID NOVELTY',   'GRID CURIOSITY',   'GRID NOSELECTION',   'GRID POPFITNESS',   'GRID POPNOVELTY',   'GRID POPCURIOSITY', 
-                                       'ARCHIVE RANDOM','ARCHIVE FITNESS','ARCHIVE NOVELTY','ARCHIVE CURIOSITY','ARCHIVE NOSELECTION','ARCHIVE POPFITNESS','ARCHIVE POPNOVELTY','ARCHIVE POPCURIOSITY'])
+                           variants = ['GRID RANDOM',   'GRID FITNESS',   'GRID NOVELTY',   'GRID CURIOSITY',   'GRID NOSELECTION',   'GRID POPFITNESS',   'GRID POPNOVELTY',   'GRID POPCURIOSITY', 'GRID PARETO', 
+                                       'ARCHIVE RANDOM','ARCHIVE FITNESS','ARCHIVE NOVELTY','ARCHIVE CURIOSITY','ARCHIVE NOSELECTION','ARCHIVE POPFITNESS','ARCHIVE POPNOVELTY','ARCHIVE POPCURIOSITY', 'ARCHIVE PARETO'])
 
     sferes.create_variants(bld,
                            source = 'scenario_hexa_turn.cpp',

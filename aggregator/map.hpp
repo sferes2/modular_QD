@@ -216,7 +216,12 @@ bool add_to_archive(indiv_t i1, indiv_t parent){
 		view_t neighborhood = _map.get_neighborhood(*indiv);
 		std::vector<indiv_t> neigh;
 		iterate(neighborhood,neigh);
+		
 		(*indiv)->fit().set_novelty(-(double)neigh.size());
+		for(auto& n : neigh)
+		  if(n->fit().value() < (*indiv)->fit().value())
+		    count++;
+		(*indiv)->fit().set_local_quality(count);
 	      }
 	}
 	

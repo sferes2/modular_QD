@@ -1,5 +1,5 @@
-#ifndef HAMMER_SELECTOR_SCOREPROPORTIONATE_HPP
-#define HAMMER_SELECTOR_SCOREPROPORTIONATE_HPP
+#ifndef _SELECTOR_SCOREPROPORTIONATE_HPP
+#define _SELECTOR_SCOREPROPORTIONATE_HPP
 
 #include "tbb/parallel_reduce.h"
 #include "tbb/parallel_sort.h"
@@ -7,23 +7,6 @@
 
 namespace sferes{
   namespace selector{
-
- 
-    struct getFitness{
-      template <typename Phen> 
-      static inline double getValue(Phen p){return p->fit().value();}
-    };
-
-    struct getNovelty{
-      template <typename Phen> 
-      static inline double getValue(Phen p){return p->fit().novelty();}
-    };
-
-    struct getCuriosity{
-      template <typename Phen> 
-      static inline double getValue(Phen p){return p->fit().curiosity();}
-    };
-
 
     template <typename Phen, typename ValueSelector=getFitness>
     class ScoreProportionate{

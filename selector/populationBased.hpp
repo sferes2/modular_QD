@@ -18,7 +18,7 @@ namespace selector
       template<typename T1, typename T2>
       bool operator()(const T1& t1, const T2& t2)const
       {
-	return ValueSelector::getValue(t1) > ValueSelector::getValue(t2); //descending order                                                                                                    
+	return ValueSelector::getValue(t1) > ValueSelector::getValue(t2); //descending order
       }
     };
 

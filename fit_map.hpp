@@ -43,37 +43,30 @@ namespace sferes
     SFERES_FITNESS(FitMap, sferes::fit::Fitness)
     {
       public:
-      FitMap() : _desc(Params::ea::behav_dim),_novelty(0),_curiosity(0) { }
-        const std::vector<float>& desc() const { return _desc; }
-	double novelty()const {return _novelty;}
-	void set_novelty(double nov) {_novelty=nov;}
-	double curiosity()const {return _curiosity;}
-	void set_curiosity(double cur) {_curiosity=cur;}
-        /*void set_desc(float x1, float x2)
-        {
-          assert(x1 >= 0);
-          assert(x2 >= 0);
-          assert(x1 <= 1);
-          assert(x2 <= 1);
-          assert(_desc.size() >= 2);
-          _desc[0] = x1;
-          _desc[1] = x2;
-        }*/
+      FitMap() : _desc(Params::ea::behav_dim),_novelty(0),_curiosity(0),_lq(0) { }
+      const std::vector<float>& desc() const { return _desc; }
+      double novelty()const {return _novelty;}
+      void set_novelty(double nov) {_novelty=nov;}
+      double curiosity()const {return _curiosity;}
+      void set_curiosity(double cur) {_curiosity=cur;}
 
-
-    void set_desc(std::vector<float> &x) ////void set_desc(boost::array<float,Params::ea::behav_dim> x)
-        {
-          assert(x.size() == Params::ea::behav_dim);
-          for(size_t i = 0; i < x.size(); ++i)
-	    {
-	      assert(x[i] >= 0.0 && x[i] <= 1.0);
-	    }
-          _desc = x;
-        }
+      double local_quality()const {return _lq;}
+      void set_local_quality(double lq) {_lq=lq;}
+      
+      void set_desc(std::vector<float> &x) ////void set_desc(boost::array<float,Params::ea::behav_dim> x)
+      {
+	assert(x.size() == Params::ea::behav_dim);
+	for(size_t i = 0; i < x.size(); ++i)
+	  {
+	    assert(x[i] >= 0.0 && x[i] <= 1.0);
+	  }
+	_desc = x;
+      }
       protected:
         std::vector<float> _desc;
 	double _novelty;
 	double _curiosity;
+	double _lq;
     };
   }
 }

@@ -191,6 +191,8 @@ int main()
     typedef selector::PopulationBased<phen_t,selector::getNovelty> select_t;
 #elif defined(POPCURIOSITY)
     typedef selector::PopulationBased<phen_t,selector::getCuriosity> select_t;
+#elif defined(PARETO) //NSLC
+    typedef selector::ParetoBased<phen_t,boost::fusion::vector<selector::getNovelty,selector::getLocalQuality>, Params > select_t;
 #else // NOSELECTION
     typedef selector::NoSelection<phen_t> select_t;
 
