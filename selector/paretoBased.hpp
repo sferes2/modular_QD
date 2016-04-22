@@ -2,7 +2,7 @@
 #define MAP_ELITES_SELECTOR_PARETOBASED_HPP
 
 #include <sferes/ea/dom_sort.hpp>
-#include <sferes/ea/crowd.hpp>
+#include "crowd_genodiv.hpp"
 
 namespace sferes
 {
@@ -64,7 +64,7 @@ namespace sferes
 	ea::dom_sort(pop, fronts, ranks);
         //_update_pareto_front(fronts);
         parallel::p_for(parallel::range_t(0, fronts.size()),
-                        ea::crowd::assign_crowd<indiv_t >(fronts));
+                        ea::crowd::assign_crowd<indiv_t >(fronts,Params::pareto::genoDiv));
 
         for (size_t i = 0; i < ranks.size(); ++i)
           pop[i]->set_rank(ranks[i]);

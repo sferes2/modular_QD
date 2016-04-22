@@ -94,6 +94,10 @@ struct Params
         SFERES_ARRAY(size_t, behav_shape, 100, 100);
 
     };
+    struct pareto
+    {
+      SFERES_CONST bool genoDiv =true;
+    };
     struct pop
     {
         // number of initial random points
