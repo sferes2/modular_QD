@@ -56,7 +56,8 @@
 #include "map_elite.hpp"
 #include "fit_map.hpp"
 
-#include <hexapod_dart/hexapod_dart_simu.hpp>
+#include <hexapod_robdyn/hexapod_robdyn_simu.hpp>
+//#include <hexapod_dart/hexapod_dart_simu.hpp>
 
 /*#define NO_MPI
 #ifdef GRAPHIC
@@ -124,12 +125,14 @@ struct Params
 
 
 namespace global {
-  std::shared_ptr<hexapod_dart::Hexapod> robot;
+  boost::shared_ptr<ode::Environment_hexa> env;
+  boost::shared_ptr<hexapod_robdyn::Hexapod> robot;
+  //std::shared_ptr<hexapod_dart::Hexapod> robot;
 
 
 }
 
-FIT_MAP(ArmFit)
+FIT_MAP(HexaTurnFit)
 {
     public:
     template<typename Indiv>
@@ -144,11 +147,15 @@ FIT_MAP(ArmFit)
 	}
       //std::cout<<std::endl;
 
-      auto local_robot=global::robot->clone();
+      //auto local_robot=global::robot->clone();
       //std::shared_ptr<hexapod_dart::Hexapod> local_robot = std::make_shared<hexapod_dart::Hexapod>(global::filename, global::brk);
       
-      using desc_t = boost::fusion::vector<>;
-      hexapod_dart::HexapodDARTSimu<hexapod_dart::desc<desc_t>> simu(ctrl, local_robot);
+      //using desc_t = boost::fusion::vector<>;
+      //hexapod_dart::HexapodDARTSimu<hexapod_dart::desc<desc_t>> simu(ctrl, local_robot);
+
+      hexapod_robdyn::HexapodRobdynSimu simu(ctrl, global::robot);
+      simu.controller().set_parameters(ctrl);
+
       simu.run(3);
 
       if(simu.covered_distance()<-1000)
@@ -200,7 +207,7 @@ FIT_MAP(ArmFit)
  private:
     Eigen::Vector3d _pos;
     template<typename Simu_t>
-      float _quality_orient(const Simu_t& simu, bool print )const
+      float _quality_orient( Simu_t& simu, bool print )
     {
       float direction;
       float B= sqrt((this->_pos[0]/2)*(this->_pos[0]/2)+(this->_pos[1]/2)*(this->_pos[1]/2));
@@ -244,7 +251,7 @@ FIT_MAP(ArmFit)
 };
 
     using namespace sferes;
-    typedef ArmFit<Params> fit_t;
+    typedef HexaTurnFit<Params> fit_t;
     typedef gen::Sampled<36, Params> gen_t;
     typedef phen::Parameters<gen_t, fit_t, Params> phen_t;
 
@@ -271,19 +278,48 @@ int main(int narg, char ** varg)
     srand (time(NULL));
   
     tbb::task_scheduler_init init(20);
+    dInitODE();
+
+    global::env = boost::shared_ptr<ode::Environment_hexa>(new ode::Environment_hexa(0));
+    std::vector<int> brk = {};
+
+    global::robot = boost::shared_ptr<hexapod_robdyn::Hexapod>(new hexapod_robdyn::Hexapod(*global::env, Eigen::Vector3d(0, 0, 0.5), brk));
+
+    double step = 0.001;
+
+    // low gravity to slow things down (eq. smaller timestep?)                                                                                                    
+    global::env->set_gravity(0, 0, -9.81);
+    bool stabilized = false;
+    int stab = 0;
+    for (size_t s = 0; s < 1000 && !stabilized; ++s) {
+
+      Eigen::Vector3d prev_pos = global::robot->pos();
+      global::robot->next_step(step);
+      global::env->next_step(step);
+
+      if ((global::robot->pos() - prev_pos).norm() < 1e-4)
+	stab++;
+      else
+	stab = 0;
+      if (stab > 100)
+	stabilized = true;
+    }
 
 
 
-    if(narg<2)
+
+
+    /*if(narg<2)
     {
       std::cout<< "Please provide path to urdf file"<<std::endl;
       return -1;
-    }
+      }*/
 
       
-    std::vector<int> brk={};
-     global::robot = std::make_shared<hexapod_dart::Hexapod>(varg[1], brk);
-     if(narg>2){
+    //std::vector<int> brk={};
+    // global::robot = std::make_shared<hexapod_dart::Hexapod>(varg[1], brk);
+     
+if(narg>2){
       run_behavior(narg, varg);
       return 0;
      }
@@ -341,5 +377,7 @@ int main(int narg, char ** varg)
     std::cout<<"end"<<std::endl;
 
     global::robot.reset();
+    global::env.reset();
+  
     std::cout<<"end"<<std::endl;
 }

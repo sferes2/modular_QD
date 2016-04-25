@@ -41,31 +41,38 @@ print sys.path[0]
 
 from waflib.Configure import conf
 
-import dart
+#import dart
+import robdyn
 import hexapod_controller
 
 
 
 def options(opt) : 
-    opt.load('dart')
+#    opt.load('dart')
+    opt.load('robdyn')
     opt.load('hexapod_controller')
-    opt.load('hexapod_dart_simu')
+#    opt.load('hexapod_dart_simu')
+    opt.load('hexapod_robdyn_simu')
 
 
 @conf
 def configure(conf): 
     print 'conf exp:'
-    conf.load('dart')
+#    conf.load('dart')
+    conf.load('robdyn')
     conf.load('hexapod_controller')
-    conf.load('hexapod_dart_simu')
-    conf.check_dart()
+#    conf.load('hexapod_dart_simu')
+    conf.load('hexapod_robdyn_simu')
+#    conf.check_dart()
+    conf.check_robdyn()
     conf.check_hexapod_controller()
-    conf.check_hexapod_dart_simu()
+#    conf.check_hexapod_dart_simu()
+    conf.check_hexapod_robdyn_simu()
 
 
 def build(bld):
 
-    libs = 'DART  EIGEN BOOST BOOST_UNIT_TEST_FRAMEWORK  BOOST_TIMER TBB HEXAPOD_DART_SIMU HEXAPOD_CONTROLLER'
+    libs = 'HEXAPOD_ROBDYN_SIMU HEXAPOD_CONTROLLER ROBDYN ODE  EIGEN BOOST BOOST_UNIT_TEST_FRAMEWORK  BOOST_TIMER TBB '
     
     print ("Entering directory `" + os.getcwd() + "/modules/'")
     #test_map_elite = bld.new_task_gen('cxx', 'program')

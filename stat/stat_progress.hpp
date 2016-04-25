@@ -31,7 +31,7 @@ namespace sferes
 	std::ofstream ofs(fname.c_str(), std::ofstream::out | std::ofstream::app);
 
         size_t archive_size = ea.pop().size();
-        double archive_max = 0.0f;
+        double archive_max = ea.pop()[0]->fit().value();
         double sum_novelty = 0.0f;
 	double sum_quality = 0.0f;
 	double var_novelty = 0.0f;
