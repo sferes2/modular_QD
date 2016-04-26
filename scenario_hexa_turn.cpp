@@ -339,7 +339,7 @@ if(narg>2){
 
 
 #if defined(GRID)
-    typedef aggregator::Map<phen_t, Params> aggreg_t;
+    typedef aggregator::Grid<phen_t, Params> aggreg_t;
     //typedef boost::fusion::vector<stat::Map<phen_t, Params>,stat::Progress<phen_t, Params> > stat_t;
 
 #else // ARCHIVE

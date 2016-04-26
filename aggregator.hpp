@@ -2,7 +2,7 @@
 #define MAP_ELITES_AGGREGATOR_HPP
 
 
-#include "aggregator/map.hpp"
+#include "aggregator/grid.hpp"
 #include "aggregator/archive.hpp"
 
 #endif

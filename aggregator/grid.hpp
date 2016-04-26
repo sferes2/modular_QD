@@ -1,5 +1,5 @@
-#ifndef MAP_ELITES_AGGREGATOR_MAP_HPP
-#define MAP_ELITES_AGGREGATOR_MAP_HPP
+#ifndef MAP_ELITES_AGGREGATOR_GRID_HPP
+#define MAP_ELITES_AGGREGATOR_GRID_HPP
 
 
 namespace sferes
@@ -10,7 +10,7 @@ namespace sferes
 
 
     template<typename Phen, typename Params>
-    class Map{
+    class Grid{
     public:
       typedef boost::shared_ptr<Phen> indiv_t;
       typedef typename std::vector<indiv_t> pop_t;
@@ -32,7 +32,7 @@ namespace sferes
       behav_index_t behav_shape;
       
 
-      Map()
+      Grid()
       {
 	assert(behav_dim == Params::ea::behav_shape_size());
         //boost::array<long int, behav_dim> tmp_shape;
@@ -104,34 +104,7 @@ namespace sferes
 	    content.push_back(*i);
 	  
       }
-
-bool add_to_archive(indiv_t i1, indiv_t parent){
-	if( _add_to_archive(i1,parent))
-	  {
-	    parent->fit().set_curiosity(parent->fit().curiosity()+1);
-	    return true;
-	  }
-	else
-	  {
-	    parent->fit().set_curiosity(parent->fit().curiosity()-0.5);
-	    return false;
-	}
-      }
-            
-
-      
-      
-      void update(){_update_novelty();}
-
-
-    
-
-    const array_t& archive() const { return _array; }
-    const array_t& parents() const { return _array_parents; }
-
-    protected:
-      
-      bool _add_to_archive(indiv_t i1, indiv_t parent)
+      bool add(indiv_t i1, indiv_t parent)
       {
         if(i1->fit().dead())
 	  return false;
@@ -152,6 +125,20 @@ bool add_to_archive(indiv_t i1, indiv_t parent){
       }
 
 
+      
+      
+      void update(){_update_novelty();}
+
+
+    
+
+    const array_t& archive() const { return _array; }
+    const array_t& parents() const { return _array_parents; }
+
+    protected:
+      
+
+
     template<typename I>
     float _dist_center(const I& indiv)
     {
@@ -169,7 +156,7 @@ bool add_to_archive(indiv_t i1, indiv_t parent){
       void _update_novelty(){
       
 	tbb::parallel_for( tbb::blocked_range<indiv_t*>(_array.data(),_array.data() + _array.num_elements()), 
-			   Par_novelty<Map<Phen,Params> >(*this));
+			   Par_novelty<Grid<Phen,Params> >(*this));
       }
 
 
@@ -203,17 +190,17 @@ bool add_to_archive(indiv_t i1, indiv_t parent){
 
 
 
-      template<typename Map_t>
+      template<typename Grid_t>
       struct Par_novelty{
-	Par_novelty(Map_t& map):_map(map),_par_array(map._array){}
-	Map_t& _map;
+	Par_novelty(Grid_t& grid):_grid(grid),_par_array(grid._array){}
+	Grid_t& _grid;
 	array_t& _par_array;	
 	void operator()(const tbb::blocked_range<indiv_t*>& r ) const {
 	  for(indiv_t* indiv=r.begin(); indiv!=r.end(); ++indiv) 
 	    if(*indiv)                                                                                                                                              
 	      {                                                                                                                                                     
 		int count =0;
-		view_t neighborhood = _map.get_neighborhood(*indiv);
+		view_t neighborhood = _grid.get_neighborhood(*indiv);
 		std::vector<indiv_t> neigh;
 		iterate(neighborhood,neigh);
 		

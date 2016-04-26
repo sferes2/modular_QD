@@ -124,7 +124,8 @@ namespace ea
       this->_eval_pop(this->_parents, 0, this->_parents.size());
      
       BOOST_FOREACH(boost::shared_ptr<Phen>&indiv, this->_parents)
-	_aggreg.add_to_archive(indiv, indiv);
+	//_aggreg.add_to_archive(indiv, indiv);
+	_add_to_aggreg(indiv, indiv);
       _offspring.resize(Params::pop::size);
       BOOST_FOREACH(boost::shared_ptr<Phen>&indiv, this->_offspring)
         {
@@ -134,11 +135,13 @@ namespace ea
 
       this->_eval_pop(this->_offspring, 0, this->_offspring.size());
       BOOST_FOREACH(boost::shared_ptr<Phen>&indiv, this->_offspring)
-	_aggreg.add_to_archive(indiv, indiv);
+	//_aggreg.add_to_archive(indiv, indiv);
+	_add_to_aggreg(indiv, indiv);
       _aggreg.update();
       this->_pop.clear();
       _aggreg.get_full_content(this->_pop);
     }
+
 
     void epoch()
     {
@@ -171,8 +174,9 @@ namespace ea
 
       assert(_offspring.size() == _parents.size());
       _added.resize(_offspring.size());
+      
       for (size_t i = 0; i < _offspring.size(); ++i)
-	_added[i]=_aggreg.add_to_archive(_offspring[i], _parents[i]);
+	_added[i]=_add_to_aggreg(_offspring[i], _parents[i]);
 
       _aggreg.update();
       this->_pop.clear();
@@ -195,6 +199,23 @@ namespace ea
     const pop_t& parents()const {return _parents;}
     const std::vector<bool>& added()const {return _added;}
     protected:
+
+
+      bool _add_to_aggreg(indiv_t i1, indiv_t parent){
+	if( _aggreg.add(i1,parent))
+	  {
+	    parent->fit().set_curiosity(parent->fit().curiosity()+1);
+	    return true;
+	  }
+	else
+	  {
+	    parent->fit().set_curiosity(parent->fit().curiosity()-0.5);
+	    return false;
+	}
+      }
+
+
+
     
     Select _select;
     Aggreg _aggreg;

@@ -30,18 +30,84 @@ namespace sferes
       }
       
 
-      bool add_to_archive(indiv_t i1, indiv_t parent){
-	if( _add_to_archive(i1,parent))
+      bool add(indiv_t i1, indiv_t parent)
+      {
+	//TODO
+	// update archive
+	if(i1->fit().dead())
+	  return false;
+	if (_archive.size()==0 ||/*_archive.size()<Params::nov::k ||*/ _dist(get_nearest(i1,_archive,false)->fit().desc(), i1->fit().desc()) > Params::nov::l) //ADD because new
 	  {
-	    parent->fit().set_curiosity(parent->fit().curiosity()+1);
+	    _add(i1);
 	    return true;
 	  }
-	else
+	else if(_archive.size()==1) //there is only one indiv in the archive and the current one is too close
 	  {
-	    parent->fit().set_curiosity(parent->fit().curiosity()-0.5);
 	    return false;
-	}
+	  }
+	else //archive size min = 2
+	  {
+	    pop_t neigh_current;
+	    get_knn(i1, _archive, 2, neigh_current, false); //Be careful, the first one referes to nn
+	    if(_dist(i1->fit().desc(), neigh_current[1]->fit().desc())  < (1-Params::nov::eps)*Params::nov::l)//too close the second NN -- this works better
+	    //if(_dist(i1->fit().desc(), neigh_current[1]->fit().desc())  < Params::nov::l)//too close the second NN
+	      {
+		return false;    
+	      }
+	    indiv_t nn=neigh_current[0];
+	    std::vector<double> score_cur(2,0), score_nn(2,0);
+	    score_cur[0]=i1->fit().value();
+	    score_nn[0]=nn->fit().value();
+	    //Compute the Novelty
+	    neigh_current.clear();
+	    if(_archive.size()<Params::nov::k+1)
+	      get_knn(i1, _archive, _archive.size(), neigh_current, false); //Be careful, the first one referes to nn 
+	    else
+	      get_knn(i1, _archive, Params::nov::k+1, neigh_current, false); //Be careful, the first one referes to nn 
+	    score_cur[1] = get_novelty( i1 , neigh_current.begin()++, neigh_current.end());
+	    score_nn[1] = get_novelty( nn , _archive);
+	    //TEST
+	    int score=0;     
+	    if((score_cur[0] >= (1-sign(score_nn[0])*Params::nov::eps)*score_nn[0] && score_cur[1] >= (1-sign(score_nn[1])*Params::nov::eps)*score_nn[1] ) &&
+	       ((score_cur[0]-score_nn[0])*std::abs(score_nn[1])>-(score_cur[1]-score_nn[1])*std::abs(score_nn[0]))) //add if significatively better on one objective
+	      {
+		_replace(nn,i1);
+		return true;
+	      }
+	    //-------
+	    //THIS WORKS as well but less
+	    /*int score=0;     
+            
+	    if(score_cur[0] >= score_nn[0] && score_cur[1] >= (1-sign(score_nn[1])*Params::nov::eps)*score_nn[1] ) //not replacing something less efficient
+	      {
+		_replace(nn,i1);
+		return true;
+		}*/
+	    //-------
+	    // THIS WORKS--------  TO STAY IN THE ARCHIVE YOU NEED TO epsilon dominate! (kind of)
+	    /*int score=0;
+	    for(int i =0;i<score_cur.size(); i++){
+	      if(score_cur[i] < (1-sign(score_nn[i])*Params::nov::eps)*score_nn[i] )
+	      return false;//nothing below the epsilon in one obj
+	      if(score_cur[i] >=score_nn[i] )
+		score++;
+	    }
+	    if(score>=1)//if better on at least 1 objective
+	      {
+		//std::cout<<"replace"<<std::endl;
+		_replace(nn,i1);
+		return true;
+	      }
+	    */
+	    //---------------
+	    else{
+	      return false;  
+	    }
+	  }
+	      
       }
+
+
       
       
 
@@ -136,84 +202,6 @@ namespace sferes
       const Tree& archive() const{return _archive;}
   
     protected:
-      bool _add_to_archive(indiv_t i1, indiv_t parent)
-      {
-	//TODO
-	// update archive
-	if(i1->fit().dead())
-	  return false;
-	if (_archive.size()==0 ||/*_archive.size()<Params::nov::k ||*/ _dist(get_nearest(i1,_archive,false)->fit().desc(), i1->fit().desc()) > Params::nov::l) //ADD because new
-	  {
-	    _add(i1);
-	    return true;
-	  }
-	else if(_archive.size()==1) //there is only one indiv in the archive and the current one is too close
-	  {
-	    return false;
-	  }
-	else //archive size min = 2
-	  {
-	    pop_t neigh_current;
-	    get_knn(i1, _archive, 2, neigh_current, false); //Be careful, the first one referes to nn
-	    if(_dist(i1->fit().desc(), neigh_current[1]->fit().desc())  < (1-Params::nov::eps)*Params::nov::l)//too close the second NN -- this works better
-	    //if(_dist(i1->fit().desc(), neigh_current[1]->fit().desc())  < Params::nov::l)//too close the second NN
-	      {
-		return false;    
-	      }
-	    indiv_t nn=neigh_current[0];
-	    std::vector<double> score_cur(2,0), score_nn(2,0);
-	    score_cur[0]=i1->fit().value();
-	    score_nn[0]=nn->fit().value();
-	    //Compute the Novelty
-	    neigh_current.clear();
-	    if(_archive.size()<Params::nov::k+1)
-	      get_knn(i1, _archive, _archive.size(), neigh_current, false); //Be careful, the first one referes to nn 
-	    else
-	      get_knn(i1, _archive, Params::nov::k+1, neigh_current, false); //Be careful, the first one referes to nn 
-	    score_cur[1] = get_novelty( i1 , neigh_current.begin()++, neigh_current.end());
-	    score_nn[1] = get_novelty( nn , _archive);
-	    //TEST
-	    int score=0;     
-	    if((score_cur[0] >= (1-sign(score_nn[0])*Params::nov::eps)*score_nn[0] && score_cur[1] >= (1-sign(score_nn[1])*Params::nov::eps)*score_nn[1] ) &&
-	       ((score_cur[0]-score_nn[0])*std::abs(score_nn[1])>-(score_cur[1]-score_nn[1])*std::abs(score_nn[0]))) //add if significatively better on one objective
-	      {
-		_replace(nn,i1);
-		return true;
-	      }
-	    //-------
-	    //THIS WORKS as well but less
-	    /*int score=0;     
-            
-	    if(score_cur[0] >= score_nn[0] && score_cur[1] >= (1-sign(score_nn[1])*Params::nov::eps)*score_nn[1] ) //not replacing something less efficient
-	      {
-		_replace(nn,i1);
-		return true;
-		}*/
-	    //-------
-	    // THIS WORKS--------  TO STAY IN THE ARCHIVE YOU NEED TO epsilon dominate! (kind of)
-	    /*int score=0;
-	    for(int i =0;i<score_cur.size(); i++){
-	      if(score_cur[i] < (1-sign(score_nn[i])*Params::nov::eps)*score_nn[i] )
-	      return false;//nothing below the epsilon in one obj
-	      if(score_cur[i] >=score_nn[i] )
-		score++;
-	    }
-	    if(score>=1)//if better on at least 1 objective
-	      {
-		//std::cout<<"replace"<<std::endl;
-		_replace(nn,i1);
-		return true;
-	      }
-	    */
-	    //---------------
-	    else{
-	      return false;  
-	    }
-	  }
-	      
-      }
-
-
 
 
       void _add(const indiv_t& tobeinserted)
