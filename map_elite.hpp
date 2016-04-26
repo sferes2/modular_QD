@@ -120,10 +120,11 @@ namespace ea
 	  indiv = boost::shared_ptr<Phen>(new Phen());
 	  indiv->random();
         }
+     
       this->_eval_pop(this->_parents, 0, this->_parents.size());
+     
       BOOST_FOREACH(boost::shared_ptr<Phen>&indiv, this->_parents)
 	_aggreg.add_to_archive(indiv, indiv);
-      
       _offspring.resize(Params::pop::size);
       BOOST_FOREACH(boost::shared_ptr<Phen>&indiv, this->_offspring)
         {
@@ -134,11 +135,9 @@ namespace ea
       this->_eval_pop(this->_offspring, 0, this->_offspring.size());
       BOOST_FOREACH(boost::shared_ptr<Phen>&indiv, this->_offspring)
 	_aggreg.add_to_archive(indiv, indiv);
-
       _aggreg.update();
       this->_pop.clear();
       _aggreg.get_full_content(this->_pop);
-      
     }
 
     void epoch()
