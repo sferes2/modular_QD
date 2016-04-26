@@ -90,14 +90,21 @@ def build(bld):
                 target='robot',
                 uselib=libs)
                 
+    varts=['GRID RANDOM','GRID NOSELECTION', 'GRID PARETO',
+                                       'GRID FITNESS', 'GRID NOVELTY', 'GRID CURIOSITY',
+                                       'GRID POPFITNESS', 'GRID POPNOVELTY', 'GRID POPCURIOSITY',
+                                       'GRID TOURFITNESS', 'GRID TOURNOVELTY', 'GRID TOURCURIOSITY',
+                                       'ARCHIVE RANDOM','ARCHIVE NOSELECTION', 'ARCHIVE PARETO',
+                                       'ARCHIVE FITNESS','ARCHIVE NOVELTY','ARCHIVE CURIOSITY',
+                                       'ARCHIVE POPFITNESS','ARCHIVE POPNOVELTY','ARCHIVE POPCURIOSITY',
+                                       'ARCHIVE TOURFITNESS','ARCHIVE TOURNOVELTY','ARCHIVE TOURCURIOSITY']
     sferes.create_variants(bld,
                            source = 'scenario_arm.cpp',
                            use = 'sferes2 robot',
                            uselib = libs,
                            target = 'scenario_arm',
                            json = '',
-                           variants = ['GRID RANDOM',   'GRID FITNESS',   'GRID NOVELTY',   'GRID CURIOSITY',   'GRID NOSELECTION',   'GRID POPFITNESS',   'GRID POPNOVELTY',   'GRID POPCURIOSITY', 'GRID PARETO', 
-                                       'ARCHIVE RANDOM','ARCHIVE FITNESS','ARCHIVE NOVELTY','ARCHIVE CURIOSITY','ARCHIVE NOSELECTION','ARCHIVE POPFITNESS','ARCHIVE POPNOVELTY','ARCHIVE POPCURIOSITY', 'ARCHIVE PARETO'])
+                           variants = varts)
 
     sferes.create_variants(bld,
                            source = 'scenario_hexa_turn.cpp',
@@ -105,9 +112,7 @@ def build(bld):
                            uselib = libs,
                            target = 'scenario_hexa_turn',
                            json = '',
-                           variants = ['GRID RANDOM',   'GRID FITNESS',   'GRID NOVELTY',   'GRID CURIOSITY',   'GRID NOSELECTION',   'GRID POPFITNESS',   'GRID POPNOVELTY',   'GRID POPCURIOSITY', 
-                                       'ARCHIVE RANDOM','ARCHIVE FITNESS','ARCHIVE NOVELTY','ARCHIVE CURIOSITY','ARCHIVE NOSELECTION','ARCHIVE POPFITNESS','ARCHIVE POPNOVELTY','ARCHIVE POPCURIOSITY'])
-
+                           variants = varts)
 
 
 

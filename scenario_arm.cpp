@@ -195,6 +195,12 @@ int main()
     typedef selector::PopulationBased<phen_t,selector::getNovelty> select_t;
 #elif defined(POPCURIOSITY)
     typedef selector::PopulationBased<phen_t,selector::getCuriosity> select_t;
+#elif defined(TOURFITNESS)
+    typedef selector::TournamentBased<phen_t,selector::getFitness> select_t;
+#elif defined(TOURNOVELTY)
+    typedef selector::TournamentBased<phen_t,selector::getNovelty> select_t;
+#elif defined(TOURCURIOSITY)
+    typedef selector::TournamentBased<phen_t,selector::getCuriosity> select_t;
 #elif defined(PARETO) //NSLC
     typedef selector::ParetoBased<phen_t,boost::fusion::vector<selector::getNovelty,selector::getLocalQuality>, Params > select_t;
 #else // NOSELECTION
