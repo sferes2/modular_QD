@@ -183,7 +183,7 @@ FIT_MAP(HexaTurnFit)
 
 	    }
 	  
-	  this->_value = _quality_orient(simu,print);
+	  this->_value = _quality_orient(simu, print);
 
 	}
       
@@ -229,7 +229,8 @@ FIT_MAP(HexaTurnFit)
 
       assert(direction>-180);
       assert(direction<180);
-      float arrival=simu.arrival_angle()*180/M_PI;
+
+      float arrival=simu.arrival_angle();//*180/M_PI;
       assert(arrival>-180);
       assert(arrival<180);
       if(print)
