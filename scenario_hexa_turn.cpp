@@ -85,7 +85,7 @@ struct Params
   struct nov{
     SFERES_CONST size_t deep=5;
     SFERES_CONST size_t k=15;
-    SFERES_CONST double l=0.02;
+    SFERES_CONST double l=0.01;
     SFERES_CONST double eps=0.1;
     
   };
@@ -95,7 +95,7 @@ struct Params
       SFERES_CONST size_t res_y = 256;*/
       
       SFERES_CONST size_t behav_dim = 2;
-      SFERES_ARRAY(size_t, behav_shape, 128, 128);
+      SFERES_ARRAY(size_t, behav_shape, 100, 100);
       
     };
     struct pop
@@ -171,7 +171,7 @@ FIT_MAP(HexaTurnFit)
 	{
 	  //you have to compute the desc before call quality_orientation
 	  _pos=simu.final_pos();
-       	  float L=1.5;//1 meter -> area radius 
+       	  float L=1;//1 meter -> area radius 
 	  std::vector<float> data = {(float) (_pos[0]+L)/(2*L), (float) (_pos[1]+L)/(2*L)};
 	  this->set_desc(data);
 
@@ -211,12 +211,12 @@ FIT_MAP(HexaTurnFit)
     {
       float direction;
       float B= sqrt((this->_pos[0]/2)*(this->_pos[0]/2)+(this->_pos[1]/2)*(this->_pos[1]/2));
-      float alpha=atan2(this->_pos[0],-this->_pos[1]);
+      float alpha=atan2(this->_pos[1],this->_pos[0]);
       float A= B/cos(alpha);
 
-      float beta=atan2(this->_pos[0],-this->_pos[1]-A);
+      float beta=atan2(this->_pos[1],this->_pos[0]-A);
 
-      if(-this->_pos[1]>=0)
+      if(this->_pos[0]>=0)
 	direction=beta-M_PI;
       else
 	direction=beta;
