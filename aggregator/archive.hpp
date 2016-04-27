@@ -111,9 +111,16 @@ namespace sferes
       
       
 
-      void update(){
+      void update( pop_t& offspring, pop_t& parents)
+      {
 	_archive.optimize();
-	_update_novelty();
+	
+	_p_novelty nov(_archive);
+      	tbb::parallel_for_each(_archive.begin(),_archive.end(),nov);
+	std::for_each(offspring.begin(), offspring.end(),nov);
+	std::for_each(parents.begin(), parents.end(),nov);
+	
+
       }
     
       
@@ -176,7 +183,10 @@ namespace sferes
       static std::pair<double, double> get_nov_and_lq(const indiv_t& indiv, const Tree&  apop)
       {
 	pop_t nearest;
-        get_knn(indiv,apop,Params::nov::k,nearest,true);
+	if(apop.size()<Params::nov::k)
+	  get_knn(indiv,apop,apop.size(),nearest,true); //here we omit because indivs are in the archive
+	else
+	  get_knn(indiv,apop,Params::nov::k,nearest,true); //here we omit because indivs are in the archive
 	
 	return std::pair<double, double> (get_novelty( indiv,nearest.begin(), nearest.end()),
 					  get_lq( indiv,nearest.begin(), nearest.end()));
@@ -185,8 +195,8 @@ namespace sferes
       static double get_lq(const indiv_t& indiv, typename pop_t::iterator begin, typename pop_t::iterator end) 
       {
 	if(std::distance(begin,end)>Params::nov::k){
-          //NEED to sort                                                                                                                                                            
-          //  std::sort(begin,end,_compare_dist_f(indiv));                                                                                                                          
+          //NEED to sort
+          //  std::sort(begin,end,_compare_dist_f(indiv));
           assert(false);
         }
 	int count =0;
@@ -225,9 +235,6 @@ namespace sferes
 
 
       
-      void _update_novelty(){
-	tbb::parallel_for_each(_archive.begin(),_archive.end(),_p_novelty(_archive));
-      }
 
 
       template<typename Behavior,typename Point>
@@ -247,16 +254,21 @@ namespace sferes
 	  _apop(ev._apop) {}
 	
 	// use the Euclidean distance !
+	void operator() (indiv_t& indiv)const
+	{
+	  auto res = Archive::get_nov_and_lq(indiv,_apop); 
+	     indiv->fit().set_novelty(res.first);
+	     indiv->fit().set_local_quality(res.second);
+	}
 	template<typename value_type>
 	void operator() (value_type& v) const
 	{
-	  // for (auto it = r.begin(); it != r.end(); ++it)
-	  //{
-	  //double nov= Archive::get_novelty(v.second,_apop);
-	  auto res = Archive::get_nov_and_lq(v.second,_apop); 
-	     v.second->fit().set_novelty(res.first);
-	     v.second->fit().set_local_quality(res.second);
-	     //}
+	  this->operator()(v.second);
+	  
+	  //auto res = Archive::get_nov_and_lq(v.second,_apop); 
+	  //   v.second->fit().set_novelty(res.first);
+	  //   v.second->fit().set_local_quality(res.second);
+	  
 	}
       };
 

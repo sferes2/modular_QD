@@ -104,6 +104,7 @@ namespace sferes
 	    content.push_back(*i);
 	  
       }
+
       bool add(indiv_t i1, indiv_t parent)
       {
         if(i1->fit().dead())
@@ -111,7 +112,7 @@ namespace sferes
 	
         behav_index_t behav_pos = get_index(i1);
 	        
-        float epsilon = 0.05;
+        float epsilon = 0.00;
         if (!_array(behav_pos)
 	    || (i1->fit().value() - _array(behav_pos)->fit().value()) > epsilon
 	    || (fabs(i1->fit().value() - _array(behav_pos)->fit().value()) <= epsilon && _dist_center(i1) < _dist_center(_array(behav_pos))))
@@ -127,7 +128,15 @@ namespace sferes
 
       
       
-      void update(){_update_novelty();}
+      void update(pop_t& offspring, pop_t& parents)
+      {
+	_update_novelty();
+ 	for(size_t i=0;i<offspring.size();i++)
+	  _update_indiv(offspring[i], *this);
+	for(size_t i=0;i<parents.size();i++)
+	  _update_indiv(parents[i], *this);
+	      
+      }
 
 
     
@@ -154,7 +163,6 @@ namespace sferes
       
 
       void _update_novelty(){
-      
 	tbb::parallel_for( tbb::blocked_range<indiv_t*>(_array.data(),_array.data() + _array.num_elements()), 
 			   Par_novelty<Grid<Phen,Params> >(*this));
       }
@@ -188,31 +196,51 @@ namespace sferes
 	IterateHelper<T, V>()(array, vect);
       }
 
-
+      
 
       template<typename Grid_t>
       struct Par_novelty{
-	Par_novelty(Grid_t& grid):_grid(grid),_par_array(grid._array){}
-	Grid_t& _grid;
-	array_t& _par_array;	
+	Par_novelty(const Grid_t& grid):_grid(grid){}//,_par_array(grid._array){}
+	const Grid_t& _grid;
+	//array_t& _par_array;	
 	void operator()(const tbb::blocked_range<indiv_t*>& r ) const {
 	  for(indiv_t* indiv=r.begin(); indiv!=r.end(); ++indiv) 
 	    if(*indiv)                                                                                                                                              
 	      {                                                                                                                                                     
-		int count =0;
+		/*int count =0;
 		view_t neighborhood = _grid.get_neighborhood(*indiv);
 		std::vector<indiv_t> neigh;
 		iterate(neighborhood,neigh);
-		
+
 		(*indiv)->fit().set_novelty(-(double)neigh.size());
 		for(auto& n : neigh)
 		  if(n->fit().value() < (*indiv)->fit().value())
 		    count++;
-		(*indiv)->fit().set_local_quality(count);
+		    (*indiv)->fit().set_local_quality(count);*/
+		_update_indiv(*indiv,_grid);
 	      }
 	}
 	
-	};
+      };
+      template<typename Grid_t>
+      static void _update_indiv(indiv_t & indiv, const Grid_t& grid) {
+	int count =0;
+	view_t neighborhood = grid.get_neighborhood(indiv);
+	std::vector<indiv_t> neigh;
+	iterate(neighborhood,neigh);
+
+	if(neigh.size()==0)
+	  {
+	    std::cout<<" HEREEEEEEEEEEEEEAAAAAAAAAAAAAAAAAAAAA"<<std::endl;
+	  }
+
+	indiv->fit().set_novelty(-(double)neigh.size());
+	for(auto& n : neigh)
+	  if(n->fit().value() < indiv->fit().value())
+	    count++;
+	indiv->fit().set_local_quality(count);
+
+      }
       
       view_t get_neighborhood(indiv_t indiv)const{
 	behav_index_t ind = get_index(indiv);
@@ -220,7 +248,8 @@ namespace sferes
 	int i=0;
 	for(auto it=indix.ranges_.begin();it!=indix.ranges_.end();it++)                                                                                     
 	  {
-	    *it=index_range_t(std::max((int)ind[i]-(int)Params::nov::deep,0),std::min(ind[i]+Params::nov::deep+1,(size_t) behav_shape[i]-1));//bound! so stop at id[i]+2-1
+	    *it=index_range_t(std::max((int)ind[i]-(int)Params::nov::deep,0),std::min(ind[i]+Params::nov::deep+1,(size_t) behav_shape[i]));//bound! so stop at id[i]+2-1
+	    
 	    i++;
 	  }
 

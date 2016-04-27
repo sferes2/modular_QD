@@ -8,19 +8,19 @@ namespace sferes
 {
 namespace selector
 {
-  template <typename Phen, typename ValueSelector=getFitness>
+  template <typename Phen, typename Selector= ScoreProportionate<getFitness> >
   struct PopulationBased{
     
     
     typedef boost::shared_ptr<Phen> indiv_t;
     
-    struct Comparator{
+    /*struct Comparator{
       template<typename T1, typename T2>
       bool operator()(const T1& t1, const T2& t2)const
       {
 	return ValueSelector::getValue(t1) > ValueSelector::getValue(t2); //descending order
       }
-    };
+      };*/
 
     
     template<typename EA>
@@ -38,15 +38,20 @@ namespace selector
 	ind++;
       }
       
-      std::sort(temp.begin(),temp.end(),Comparator());
+      //std::sort(temp.begin(),temp.end(),Comparator());
       
-      ind=0;
+      /*ind=0;
       for (auto& indiv : pop)
 	{
 	  indiv = temp[ind];
 	  ind++;
-	}
+	  }*/
+
+
+      _selector(pop,temp);
+      
     }
+    Selector _selector;
   };
 }
 }

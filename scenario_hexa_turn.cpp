@@ -360,14 +360,13 @@ if(narg>2){
 #elif defined(CURIOSITY)
     typedef selector::ScoreProportionate<phen_t,selector::getCuriosity> select_t;
 #elif defined(POPFITNESS)
-    typedef selector::PopulationBased<phen_t,selector::getFitness> select_t;
+    typedef selector::PopulationBased<phen_t, selector::ScoreProportionate<phen_t, selector::getFitness> > select_t;
 #elif defined(POPNOVELTY)
-    typedef selector::PopulationBased<phen_t,selector::getNovelty> select_t;
+    typedef selector::PopulationBased<phen_t, selector::ScoreProportionate<phen_t, selector::getNovelty> > select_t;
 #elif defined(POPCURIOSITY)
-    typedef selector::PopulationBased<phen_t,selector::getCuriosity> select_t;
+    typedef selector::PopulationBased<phen_t, selector::ScoreProportionate<phen_t, selector::getCuriosity> > select_t;
 #else // NOSELECTION
     typedef selector::NoSelection<phen_t> select_t;
-
 #endif
 
     typedef ea::MapElite<phen_t, eval_t, stat_t, modifier_t, select_t, aggreg_t, Params> ea_t;

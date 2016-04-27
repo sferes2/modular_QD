@@ -21,6 +21,7 @@ namespace sferes
       void operator()(std::vector<boost::shared_ptr<Phen> >& new_pop,const EA& ea)const{
 	assert(ea.parents().size());
 	assert(ea.offspring().size());
+
 	//void _fill_nondominated_sort(pop_t& mixed_pop, pop_t& new_pop) {
 	pop_t parents, offspring, mixed_pop;
 	_pop2crow(ea.parents(), parents);
@@ -33,7 +34,8 @@ namespace sferes
 	
 	_rank_crowd(mixed_pop, fronts);
 	new_pop.clear();
-	
+
+
 	// fill the i first layers
 	size_t i;
 	for (i = 0; i < fronts.size(); ++i)
@@ -47,14 +49,16 @@ namespace sferes
 	if (new_pop.size() < Params::pop::size) 
 	  {
 	    std::sort(fronts[i].begin(), fronts[i].end(), ea::crowd::compare_crowd());
-	  for (size_t k = 0; k < size ; ++k)
-	    {
-	      assert(i < fronts.size());
-	      new_pop.push_back(fronts[i][k]);
-	    }
+	    for (size_t k = 0; k < size ; ++k)
+	      {
+		assert(i < fronts.size());
+		new_pop.push_back(fronts[i][k]);
+	      }
 	  }
-	assert(new_pop.size() == Params::pop::size);
 
+	
+	assert(new_pop.size() == Params::pop::size);
+	
       }
 
 

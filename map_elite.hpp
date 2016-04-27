@@ -122,10 +122,9 @@ namespace ea
         }
      
       this->_eval_pop(this->_parents, 0, this->_parents.size());
-     
-      BOOST_FOREACH(boost::shared_ptr<Phen>&indiv, this->_parents)
-	//_aggreg.add_to_archive(indiv, indiv);
-	_add_to_aggreg(indiv, indiv);
+      _add(_parents,_parents);
+
+
       _offspring.resize(Params::pop::size);
       BOOST_FOREACH(boost::shared_ptr<Phen>&indiv, this->_offspring)
         {
@@ -134,10 +133,8 @@ namespace ea
         }
 
       this->_eval_pop(this->_offspring, 0, this->_offspring.size());
-      BOOST_FOREACH(boost::shared_ptr<Phen>&indiv, this->_offspring)
-	//_aggreg.add_to_archive(indiv, indiv);
-	_add_to_aggreg(indiv, indiv);
-      _aggreg.update();
+      _add(_offspring,_offspring);
+
       this->_pop.clear();
       _aggreg.get_full_content(this->_pop);
     }
@@ -146,20 +143,21 @@ namespace ea
     void epoch()
     {
       
-      _parents.resize(Params::pop::size);
+      //_parents.resize(Params::pop::size);// THE SIZE OF THE PARENTS IS PROVIDED DURING THE INIT
+      //CLEAN OFFSPRING and PARENTS AFTER SELECT as it can be used by Select
       _select(_parents,*this);
       
-      //CLEAN OFFSPRING AFTER SELECT as it can be used by Select
+
       _offspring.clear();
-      _added.clear();
+
 
 
       std::vector<size_t> a;
       misc::rand_ind(a, _parents.size());
-      for (size_t i = 0; i < Params::pop::size; i+=2)                                                                                                                                        
+      for (size_t i = 0; i < Params::pop::size; i+=2)
 	{	    
 	  boost::shared_ptr<Phen> i1, i2;
-	  _parents[i]->cross(_parents[i+1], i1, i2);
+	  _parents[a[i]]->cross(_parents[a[i+1]], i1, i2);
 	  i1->mutate();
 	  i2->mutate();
 	  i1->develop();
@@ -170,20 +168,13 @@ namespace ea
 
       this->_eval_pop(_offspring, 0, _offspring.size());
       
-
+      _add(_offspring,_parents);
 
       assert(_offspring.size() == _parents.size());
-      _added.resize(_offspring.size());
-      
-      for (size_t i = 0; i < _offspring.size(); ++i)
-	_added[i]=_add_to_aggreg(_offspring[i], _parents[i]);
-
-      _aggreg.update();
       this->_pop.clear();
       _aggreg.get_full_content(this->_pop);
       
     }
-
 
 
     template<typename I>
@@ -214,6 +205,14 @@ namespace ea
 	}
       }
 
+    void _add(pop_t& pop_off,  pop_t& pop_parents)
+    {
+      _added.resize(pop_off.size());
+      for (size_t i = 0; i < pop_off.size(); ++i)
+	_added[i]=_add_to_aggreg(pop_off[i], pop_parents[i]);
+      _aggreg.update(pop_off, pop_parents);
+      
+    }
 
 
     

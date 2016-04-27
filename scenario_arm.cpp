@@ -190,11 +190,11 @@ int main()
 #elif defined(CURIOSITY)
     typedef selector::ScoreProportionate<phen_t,selector::getCuriosity> select_t;
 #elif defined(POPFITNESS)
-    typedef selector::PopulationBased<phen_t,selector::getFitness> select_t;
+    typedef selector::PopulationBased<phen_t, selector::ScoreProportionate<phen_t, selector::getFitness> > select_t;
 #elif defined(POPNOVELTY)
-    typedef selector::PopulationBased<phen_t,selector::getNovelty> select_t;
+    typedef selector::PopulationBased<phen_t, selector::ScoreProportionate<phen_t, selector::getNovelty> > select_t;
 #elif defined(POPCURIOSITY)
-    typedef selector::PopulationBased<phen_t,selector::getCuriosity> select_t;
+    typedef selector::PopulationBased<phen_t, selector::ScoreProportionate<phen_t, selector::getCuriosity> > select_t;
 #elif defined(TOURFITNESS)
     typedef selector::TournamentBased<phen_t,selector::getFitness> select_t;
 #elif defined(TOURNOVELTY)
