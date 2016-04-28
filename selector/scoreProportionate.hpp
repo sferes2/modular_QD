@@ -43,7 +43,9 @@ namespace sferes{
       }
 
       void operator()(std::vector<indiv_t>& pop,const std::vector<indiv_t>& ea_pop) const {
-	double sum = get_sum(ea_pop);
+	std::pair<double, double> res = get_sum(ea_pop);
+	double min=res.first;
+	double sum=res.second-min*ea_pop.size();
 	/*if(min!=max){ 
 	  for (auto& indiv : pop)
 	    {
@@ -64,16 +66,18 @@ namespace sferes{
 	      indiv=_pop[x1];
 	    }	  
 	    }*/
-	
 	for (auto& indiv : pop)
 	  {
 	    double r= misc::rand((double) sum);
-	    itc_t it=pop.cbegin();
-	    double p = ValueSelector::getValue(*it);
-	    while (p<r)
+	    
+	    itc_t it=ea_pop.cbegin();
+	    double p = (ValueSelector::getValue(*it)-min);
+	    
+	    while (p<r && it!=ea_pop.end())
 	      {
+		
 		it++;
-		p+=ValueSelector::getValue(*it);
+		p+=(ValueSelector::getValue(*it)-min);
 	      }
 	    indiv= *it;
 	  }
@@ -93,7 +97,7 @@ namespace sferes{
 
     private:
       
-      double get_sum(const std::vector<indiv_t>& pop)const
+      std::pair<double,double> get_sum(const std::vector<indiv_t>& pop)const
       {
 	/*_pop= std::vector<indiv_t>(pop);
 	if(_pop.size()==0)
@@ -117,12 +121,24 @@ namespace sferes{
 					   }*/
 	typedef tbb::blocked_range<itc_t> range_type;
 	return tbb::parallel_reduce(
-				  range_type( pop.begin(), pop.end() ), 0.0,
-				  [](const range_type& r, double value)->double {
-				    return std::accumulate(r.begin(),r.end(),value,[]( double const & current, indiv_t const& p)
-							   { return current + ValueSelector::getValue(p); });
-				  },
-				  std::plus<double>()
+				    range_type( pop.begin(), pop.end() ), 
+				    std::pair<double,double>(0,0),
+				    [](const range_type& r, std::pair<double,double> value)->std::pair<double,double> {
+				      //return std::accumulate(r.begin(),r.end(),value,[]( std::pair<double,double> const & current, indiv_t const& p)
+				      //{ return std::pair<double,double>(std::min(current.first,ValueSelector::getValue(p)), current.second + ValueSelector::getValue(p)); }
+				      
+				      for( auto it=r.begin(); it!=r.end(); ++it )
+					{
+					  value.first=std::min(value.first,ValueSelector::getValue(*it));
+					  value.second+=ValueSelector::getValue(*it);
+					}
+				      return value;
+				      //   );
+				    },
+				    []( std::pair<double,double> x, std::pair<double,double> y )->std::pair<double,double> {
+				    return {std::min(x.first,y.first), x.second+y.second};
+				  }
+				  
 				  );
 	
 
