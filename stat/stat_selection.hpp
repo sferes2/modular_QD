@@ -39,12 +39,18 @@ SFERES_STAT(Selection, Stat)
 	for(size_t dim = 0; dim < ea.parents()[i]->fit().desc().size(); ++dim)
 	  ofs<<ea.parents()[i]->fit().desc()[dim]<<" ";
 	ofs<<"   "<<ea.parents()[i]->fit().value()<<"   ";
+	ofs<<"   "<<ea.parents()[i]->fit().novelty()<<"   ";
+	ofs<<"   "<<ea.parents()[i]->fit().local_quality()<<"   ";
 	ofs<<"   "<<ea.parents()[i]->fit().curiosity()<<"   ";
 	
 	for(size_t dim = 0; dim < ea.offspring()[i]->fit().desc().size(); ++dim)
           ofs<<ea.offspring()[i]->fit().desc()[dim]<<" ";
 	ofs<<"   "<<ea.offspring()[i]->fit().value()<<"   ";
-	
+	ofs<<"   "<<ea.offspring()[i]->fit().novelty()<<"   ";
+        ofs<<"   "<<ea.offspring()[i]->fit().local_quality()<<"   ";
+        ofs<<"   "<<ea.offspring()[i]->fit().curiosity()<<"   ";
+
+
 	ofs<<"   "<<ea.added()[i]<<std::endl;
 	    
       }

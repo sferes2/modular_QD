@@ -27,6 +27,7 @@ namespace sferes
 	_pop2crow(ea.parents(), parents);
 	_pop2crow(ea.offspring(), offspring);
 	_merge(parents, offspring, mixed_pop);
+	
 	_update_obj(mixed_pop);
 	
 	assert(mixed_pop.size());
@@ -56,6 +57,9 @@ namespace sferes
 		new_pop.push_back(fronts[i][k]);
 	      }
 	  }
+	
+	//for(auto& indiv:new_pop)
+	//  std::cout<<ea.gen()<<"  "<<indiv->fit().novelty()<<"   "<<indiv->fit().local_quality()<< "   "<<indiv->fit().objs()[0]<< "   "<<indiv->fit().objs()[1]<<std::endl;
 	
 	_selection(new_pop,final_pop);
 	
@@ -155,17 +159,19 @@ namespace sferes
 	ObjUpdator(indiv_t& indiv):_indiv(indiv){}
 	indiv_t& _indiv; 
 	template<typename T>
-	void operator()(T& x) const{
-	  _indiv->fit().add_obj();
-	  _indiv->fit().set_obj(_indiv->fit().objs().size() - 1 , x.getValue(_indiv));
+	size_t operator()(size_t index,T& x) const{
+	  
+	  _indiv->fit().set_obj(index , x.getValue(_indiv));
+	  return ++index;
 	}
       };
       void _update_obj(pop_t& pop) const
       {
 	for (auto& indiv : pop)
 	  {
-	    if(indiv->fit().objs().size() != boost::fusion::size(_obj_selector))
-	       boost::fusion::for_each(_obj_selector, ObjUpdator(indiv));
+	    while(indiv->fit().objs().size() != boost::fusion::size(_obj_selector))
+	      indiv->fit().add_obj();
+	    boost::fusion::accumulate(_obj_selector, 0, ObjUpdator(indiv));
 	    //for(auto& obj: indiv->fit().objs())
 	    //  std::cout<<obj<<"  ";
 	    //std::cout<<std::endl;
