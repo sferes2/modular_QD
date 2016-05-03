@@ -256,6 +256,14 @@ namespace sferes
 	// use the Euclidean distance !
 	void operator() (indiv_t& indiv)const
 	{
+	  
+	  if(indiv->fit().dead())
+	    {
+	      indiv->fit().set_novelty(-std::numeric_limits<double>::infinity());
+	      indiv->fit().set_local_quality(-std::numeric_limits<double>::infinity());
+	      return;
+	    }
+	
 	  auto res = Archive::get_nov_and_lq(indiv,_apop); 
 	     indiv->fit().set_novelty(res.first);
 	     indiv->fit().set_local_quality(res.second);

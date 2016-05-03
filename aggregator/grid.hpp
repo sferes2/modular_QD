@@ -222,8 +222,17 @@ namespace sferes
 	}
 	
       };
+      //WARNING, individuals in population can be dead...
       template<typename Grid_t>
       static void _update_indiv(indiv_t & indiv, const Grid_t& grid) {
+	if(indiv->fit().dead())
+	  {
+	    indiv->fit().set_novelty(-std::numeric_limits<double>::infinity());
+	    indiv->fit().set_local_quality(-std::numeric_limits<double>::infinity());
+	    return;
+	  }
+	
+
 	int count =0;
 	view_t neighborhood = grid.get_neighborhood(indiv);
 	std::vector<indiv_t> neigh;
