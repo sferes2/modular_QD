@@ -98,6 +98,11 @@ struct Params
       SFERES_ARRAY(size_t, behav_shape, 100, 100);
       
     };
+  struct pareto
+  {
+    SFERES_CONST bool genoDiv =true;
+  };
+  
     struct pop
     {
       // number of initial random points
@@ -351,6 +356,7 @@ if(narg>2){
     typedef boost::fusion::vector<stat::Aggregator<phen_t, Params>,stat::Progress<phen_t, Params> > stat_t;
 
 
+
 #if defined(RANDOM)
     typedef selector::Random<phen_t> select_t;
 #elif defined(FITNESS)
@@ -365,8 +371,17 @@ if(narg>2){
     typedef selector::PopulationBased<phen_t, selector::ScoreProportionate<phen_t, selector::getNovelty> > select_t;
 #elif defined(POPCURIOSITY)
     typedef selector::PopulationBased<phen_t, selector::ScoreProportionate<phen_t, selector::getCuriosity> > select_t;
+#elif defined(TOURFITNESS)
+    typedef selector::TournamentBased<phen_t,selector::getFitness> select_t;
+#elif defined(TOURNOVELTY)
+    typedef selector::TournamentBased<phen_t,selector::getNovelty> select_t;
+#elif defined(TOURCURIOSITY)
+    typedef selector::TournamentBased<phen_t,selector::getCuriosity> select_t;
+#elif defined(PARETO) //NSLC
+    typedef selector::ParetoBased<phen_t,boost::fusion::vector<selector::getNovelty,selector::getLocalQuality>, Params > select_t;
 #else // NOSELECTION
     typedef selector::NoSelection<phen_t> select_t;
+
 #endif
 
     typedef ea::MapElite<phen_t, eval_t, stat_t, modifier_t, select_t, aggreg_t, Params> ea_t;
