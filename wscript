@@ -113,6 +113,13 @@ def build(bld):
                            target = 'scenario_hexa_turn',
                            json = '',
                            variants = varts)
+    sferes.create_variants(bld,
+                           source = 'scenario_hexa_walk.cpp',
+                           use = 'sferes2',
+                           uselib = libs,
+                           target = 'scenario_hexa_walk',
+                           json = '',
+                           variants = varts)
 
 
 
