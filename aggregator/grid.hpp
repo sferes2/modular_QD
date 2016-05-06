@@ -87,8 +87,8 @@ namespace sferes
 	behav_index_t behav_pos;
 	for(size_t i = 0; i < Params::ea::behav_shape_size(); ++i)
 	  {
-	    behav_pos[i] = round(p[i] * behav_shape[i]);
-	    behav_pos[i] = std::min(behav_pos[i], behav_shape[i] - 1);
+	    behav_pos[i] = round(p[i] * (behav_shape[i]-1));
+	    //behav_pos[i] = std::min(behav_pos[i], behav_shape[i] - 1);
 	    assert(behav_pos[i] < behav_shape[i]);
 	  }
 	return behav_pos;
@@ -237,11 +237,6 @@ namespace sferes
 	view_t neighborhood = grid.get_neighborhood(indiv);
 	std::vector<indiv_t> neigh;
 	iterate(neighborhood,neigh);
-
-	if(neigh.size()==0)
-	  {
-	    std::cout<<" HEREEEEEEEEEEEEEAAAAAAAAAAAAAAAAAAAAA"<<std::endl;
-	  }
 
 	indiv->fit().set_novelty(-(double)neigh.size());
 	for(auto& n : neigh)

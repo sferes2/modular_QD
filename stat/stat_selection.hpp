@@ -28,7 +28,7 @@ SFERES_STAT(Selection, Stat)
 	std::string fname =  ea.res_dir() + "/"
 	  + prefix
 	  + std::string(".dat");
-	ofs=std::ofstream(fname.c_str());
+	ofs.open(fname.c_str());
       }
 
       assert(ea.offspring().size()==ea.parents().size());

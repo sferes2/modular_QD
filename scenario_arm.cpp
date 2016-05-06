@@ -114,8 +114,8 @@ struct Params
     };
     struct evo_float
     {
-        SFERES_CONST float cross_rate = 0.25f;
-        SFERES_CONST float mutation_rate = 0.1f;
+        SFERES_CONST float cross_rate = 0.0f;
+        SFERES_CONST float mutation_rate = 0.125f;
         SFERES_CONST float eta_m = 10.0f;
         SFERES_CONST float eta_c = 10.0f;
         SFERES_CONST mutation_t mutation_type = polynomial;
@@ -138,7 +138,7 @@ FIT_MAP(ArmFit)
 	angle[i] = ind.data(i)*M_PI/2;
       this->_value = - sqrt((angle.array()-angle.mean()).square().mean());
       Eigen::Vector3d pos=robot::Arm::forward_model(angle);
-      float L=robot::Arm::max_length();
+      float L=robot::Arm::max_length()*1.1;
       std::vector<float> data = {(float) (pos[0]+L)/(2*L), (float) (pos[1]+L)/(2*L)};
       //this->set_desc(ind.gen().data(0), ind.gen().data(1));
       this->set_desc(data);
@@ -149,7 +149,7 @@ FIT_MAP(ArmFit)
 
 int main()
 {
-    srand (time(NULL));
+    srand(time(NULL));
     tbb::task_scheduler_init init(20);  
 
     using namespace sferes;
