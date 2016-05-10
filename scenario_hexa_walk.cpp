@@ -177,17 +177,21 @@ FIT_MAP(HexaWalkFit)
 	  std::vector<float> data(6,0);
 	  for(int i=0;i<6;i++)
 	    data[i]=((float) std::accumulate(simu.get_contact(i).begin(), simu.get_contact(i).end(), 0))/simu.get_contact(i).size();
+	  
 	  this->set_desc(data);
 
+	  this->_value = simu.covered_distance();
+	  
 	  if(print)
 	    {
+	      std::cout<<"value: "<<this->_value<<std::endl;
 	      std::cout<<"data: ";
 	      for(int i=0;i<6;i++)	      
-		std::cout<<data[0]<<" ";
+		std::cout<<data[i]<<" ";
 	      std::cout<<std::endl;
 	    }
 	  
-	  this->_value = simu.covered_distance();
+
 
 	}
       
@@ -226,8 +230,8 @@ void run_behavior(int narg, char ** varg)
   std::cout<<"narg "<<narg <<" indiv.gen "<<  indiv.gen().size()<<std::endl;
   for (size_t i = 0; i < indiv.gen().size(); ++i)
     {
-      std::cout<<i<<":"<<varg[i+2]<<"   ";
-      indiv.gen().set_data(i,std::atof(varg[i+2])*4);
+      std::cout<<i<<":"<<varg[i+1]<<"   ";
+      indiv.gen().set_data(i,std::atof(varg[i+1])*4);
       std::cout<<indiv.gen().data(i)<<"   "<<std::endl;
     }
   
