@@ -109,7 +109,7 @@ struct Params
       //SFERES_CONST size_t init_size = 100;
       // size of a batch
       SFERES_CONST size_t size = 200;
-      SFERES_CONST size_t nb_gen = 10001;
+      SFERES_CONST size_t nb_gen = 20001;
       SFERES_CONST size_t dump_period = 500;
     };
     struct parameters
@@ -163,7 +163,7 @@ FIT_MAP(HexaWalkFit)
 
       simu.run(3);
 
-      if(simu.covered_distance()<-1000)
+      if(simu.covered_distance()<-1000 || simu.covered_distance() > 1.5) //sanity check
 	{
 	  _dead=true;
 	  if(print)
