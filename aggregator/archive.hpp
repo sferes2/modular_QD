@@ -200,12 +200,18 @@ namespace sferes
           assert(false);
         }
 	int count =0;
-        typename pop_t::iterator it= begin;
-        for(int i =0;i<Params::nov::k; i++){
-          if((*it)->fit().value() < indiv->fit().value())
-	    count++;
-          it++;
-        }
+	//TODO remove this
+	/* typename pop_t::iterator it= begin;
+	   for(int i =0;i<Params::nov::k; i++){
+	   if((*it)->fit().value() < indiv->fit().value())
+	   count++;
+	   it++;
+	   }*/
+	for(typename pop_t::iterator it= begin;it!=end; it++){
+	  if((*it)->fit().value() < indiv->fit().value())
+	    count++;   
+	}
+	
         return count;
       }
 

@@ -83,9 +83,9 @@ struct Params
 {
 
   struct nov{
-    SFERES_CONST size_t deep=5;
+    SFERES_CONST size_t deep=1;
     SFERES_CONST size_t k=15;
-    SFERES_CONST double l=0.01;
+    SFERES_CONST double l=0.25;
     SFERES_CONST double eps=0.1;
     
   };
@@ -94,8 +94,8 @@ struct Params
         /*SFERES_CONST size_t res_x = 256;
       SFERES_CONST size_t res_y = 256;*/
       
-      SFERES_CONST size_t behav_dim = 2;
-      SFERES_ARRAY(size_t, behav_shape, 100, 100);
+      SFERES_CONST size_t behav_dim = 6;
+      SFERES_ARRAY(size_t, behav_shape, 5, 5,5,5,5,5);
       
     };
   struct pareto
@@ -109,7 +109,7 @@ struct Params
       //SFERES_CONST size_t init_size = 100;
       // size of a batch
       SFERES_CONST size_t size = 200;
-      SFERES_CONST size_t nb_gen = 10001;
+      SFERES_CONST size_t nb_gen = 20001;
       SFERES_CONST size_t dump_period = 500;
     };
     struct parameters
@@ -137,7 +137,7 @@ namespace global {
 
 }
 
-FIT_MAP(HexaTurnFit)
+FIT_MAP(HexaWalkFit)
 {
     public:
     template<typename Indiv>
@@ -163,7 +163,7 @@ FIT_MAP(HexaTurnFit)
 
       simu.run(3);
 
-      if(simu.covered_distance()<-1000)
+      if(simu.covered_distance()<-1000 || simu.covered_distance() > 1.5) //sanity check
 	{
 	  _dead=true;
 	  if(print)
@@ -174,21 +174,24 @@ FIT_MAP(HexaTurnFit)
 	}
       else
 	{
-	  //you have to compute the desc before call quality_orientation
-	  _pos=simu.final_pos();
-       	  float L=1;//1 meter -> area radius 
-	  std::vector<float> data = {(float) (_pos[0]+L)/(2*L), (float) (_pos[1]+L)/(2*L)};
+	  std::vector<float> data(6,0);
+	  for(int i=0;i<6;i++)
+	    data[i]=((float) std::accumulate(simu.get_contact(i).begin(), simu.get_contact(i).end(), 0))/simu.get_contact(i).size();
+	  
 	  this->set_desc(data);
 
+	  this->_value = simu.covered_distance();
+	  
 	  if(print)
 	    {
-	      std::cout<<"pos: "<<_pos.transpose()<<std::endl;
-	      std::cout<<"data: "<<data[0]<<" "<<data[1]<<std::endl;
-	      
-
+	      std::cout<<"value: "<<this->_value<<std::endl;
+	      std::cout<<"data: ";
+	      for(int i=0;i<6;i++)	      
+		std::cout<<data[i]<<" ";
+	      std::cout<<std::endl;
 	    }
 	  
-	  this->_value = _quality_orient(simu, print);
+
 
 	}
       
@@ -208,56 +211,11 @@ FIT_MAP(HexaTurnFit)
     //std::cout << std::endl;
 
     }
-    bool dead() {return _dead;}
- private:
-    Eigen::Vector3d _pos;
-    template<typename Simu_t>
-      float _quality_orient( Simu_t& simu, bool print )
-    {
-      float direction;
-      float B= sqrt((this->_pos[0]/2)*(this->_pos[0]/2)+(this->_pos[1]/2)*(this->_pos[1]/2));
-      float alpha=atan2(this->_pos[1],this->_pos[0]);
-      float A= B/cos(alpha);
-
-      float beta=atan2(this->_pos[1],this->_pos[0]-A);
-
-      if(this->_pos[0]>=0)
-	direction=beta-M_PI;
-      else
-	direction=beta;
-      while(direction<-M_PI)
-	direction+=2*M_PI;
-      while(direction>M_PI)
-	direction-=2*M_PI;
-
-      direction=std::round(direction*100)/100.0*180/M_PI;
-
-      assert(direction>-180);
-      assert(direction<180);
-
-      float arrival=simu.arrival_angle();//*180/M_PI;
-      assert(arrival>-180);
-      assert(arrival<180);
-      if(print)
-	{
-	  std::cout<<"direction: "<<direction<<std::endl;
-	  std::cout<<"arrival: "<<arrival<<std::endl;
-	  std::cout<<"error: "<<- std::abs(direction-arrival)<<std::endl;
-	  
-	}
-
-
-      return - std::abs(direction-arrival);
-      
-
-    }
-
-    bool _dead;
 
 };
 
     using namespace sferes;
-    typedef HexaTurnFit<Params> fit_t;
+    typedef HexaWalkFit<Params> fit_t;
     typedef gen::Sampled<36, Params> gen_t;
     typedef phen::Parameters<gen_t, fit_t, Params> phen_t;
 
@@ -269,8 +227,8 @@ void run_behavior(int narg, char ** varg)
   std::cout<<"narg "<<narg <<" indiv.gen "<<  indiv.gen().size()<<std::endl;
   for (size_t i = 0; i < indiv.gen().size(); ++i)
     {
-      std::cout<<i<<":"<<varg[i+2]<<"   ";
-      indiv.gen().set_data(i,std::atof(varg[i+2])*4);
+      std::cout<<i<<":"<<varg[i+1]<<"   ";
+      indiv.gen().set_data(i,std::atof(varg[i+1])*4);
       std::cout<<indiv.gen().data(i)<<"   "<<std::endl;
     }
   
