@@ -211,9 +211,6 @@ FIT_MAP(HexaWalkFit)
     //std::cout << std::endl;
 
     }
-    bool dead() {return _dead;}
- private:
-    bool _dead;
 
 };
 

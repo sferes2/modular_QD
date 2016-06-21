@@ -143,7 +143,7 @@ FIT_MAP(HexaTurnFit)
     template<typename Indiv>
       void eval(Indiv& ind, bool print=false)
     {
-      _dead=false;
+
       std::vector<double> ctrl(ind.size());
       for (size_t i = 0; i < ind.size(); ++i)
 	{
@@ -208,7 +208,7 @@ FIT_MAP(HexaTurnFit)
     //std::cout << std::endl;
 
     }
-    bool dead() {return _dead;}
+
  private:
     Eigen::Vector3d _pos;
     template<typename Simu_t>
@@ -252,7 +252,7 @@ FIT_MAP(HexaTurnFit)
 
     }
 
-    bool _dead;
+
 
 };
 

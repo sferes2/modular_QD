@@ -144,7 +144,6 @@ FIT_MAP(ArmFit)
       this->set_desc(data);
     }
 
-    bool dead() {return false;}
 };
 
 int main()

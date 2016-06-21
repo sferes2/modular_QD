@@ -71,62 +71,73 @@ def configure(conf):
 
 
 def build(bld):
+ #   bld.recurse('variants')
+     
+     libs = 'HEXAPOD_ROBDYN_SIMU HEXAPOD_CONTROLLER ROBDYN ODE  EIGEN BOOST BOOST_UNIT_TEST_FRAMEWORK  BOOST_TIMER TBB '
+     
+     print ("Entering directory `" + os.getcwd() + "/modules/'")
+     #test_map_elite = bld.new_task_gen('cxx', 'program')
+     #test_map_elite.source = 'test_map_elite.cpp'
+     #test_map_elite.includes = '. ../../'
+     #test_map_elite.uselib_local = 'sferes2'
+     #test_map_elite.uselib = libs
+     #test_map_elite.target = 'test_map_elite'
+     #test_map_elite.unit_test = 1
+ 
+ 
+     bld.program(features='cxx cxxstlib',
+                 source='scenarii/arm_hori.cpp',
+                 includes='. .. ../../',
+                 target='robot',
+                 uselib=libs)
+                 
+     varts=['GRID RANDOM','GRID NOSELECTION', 'GRID PARETO',
+                                        'GRID FITNESS', 'GRID NOVELTY', 'GRID CURIOSITY',
+                                        'GRID POPFITNESS', 'GRID POPNOVELTY', 'GRID POPCURIOSITY',
+                                        'GRID TOURFITNESS', 'GRID TOURNOVELTY', 'GRID TOURCURIOSITY',
+                                        'ARCHIVE RANDOM','ARCHIVE NOSELECTION', 'ARCHIVE PARETO',
+                                        'ARCHIVE FITNESS','ARCHIVE NOVELTY','ARCHIVE CURIOSITY',
+                                        'ARCHIVE POPFITNESS','ARCHIVE POPNOVELTY','ARCHIVE POPCURIOSITY',
+                                        'ARCHIVE TOURFITNESS','ARCHIVE TOURNOVELTY','ARCHIVE TOURCURIOSITY']
+     sferes.create_variants(bld,
+                            source = 'scenarii/scenario_arm.cpp',
+                            use = 'sferes2 robot',
+                            includes='. .. ../../ ./scenarii/',
+                            uselib = libs,
+                            target = 'scenario_arm',
+                            json = '',
+                            variants = varts)
+ 
+     sferes.create_variants(bld,
+                            source = 'scenarii/scenario_hexa_turn.cpp',
+                            use = 'sferes2',
+                            uselib = libs,
+                            target = 'scenario_hexa_turn',
+                            json = '',
+                            variants = varts)
 
-    libs = 'HEXAPOD_ROBDYN_SIMU HEXAPOD_CONTROLLER ROBDYN ODE  EIGEN BOOST BOOST_UNIT_TEST_FRAMEWORK  BOOST_TIMER TBB '
-    
-    print ("Entering directory `" + os.getcwd() + "/modules/'")
-    #test_map_elite = bld.new_task_gen('cxx', 'program')
-    #test_map_elite.source = 'test_map_elite.cpp'
-    #test_map_elite.includes = '. ../../'
-    #test_map_elite.uselib_local = 'sferes2'
-    #test_map_elite.uselib = libs
-    #test_map_elite.target = 'test_map_elite'
-    #test_map_elite.unit_test = 1
-
-
-    bld.program(features='cxx cxxstlib',
-                source='arm_hori.cpp',
-                includes='. .. ../../',
-                target='robot',
-                uselib=libs)
-                
-    varts=['GRID RANDOM','GRID NOSELECTION', 'GRID PARETO',
-                                       'GRID FITNESS', 'GRID NOVELTY', 'GRID CURIOSITY',
-                                       'GRID POPFITNESS', 'GRID POPNOVELTY', 'GRID POPCURIOSITY',
-                                       'GRID TOURFITNESS', 'GRID TOURNOVELTY', 'GRID TOURCURIOSITY',
-                                       'ARCHIVE RANDOM','ARCHIVE NOSELECTION', 'ARCHIVE PARETO',
-                                       'ARCHIVE FITNESS','ARCHIVE NOVELTY','ARCHIVE CURIOSITY',
-                                       'ARCHIVE POPFITNESS','ARCHIVE POPNOVELTY','ARCHIVE POPCURIOSITY',
-                                       'ARCHIVE TOURFITNESS','ARCHIVE TOURNOVELTY','ARCHIVE TOURCURIOSITY']
-    sferes.create_variants(bld,
-                           source = 'scenario_arm.cpp',
-                           use = 'sferes2 robot',
-                           uselib = libs,
-                           target = 'scenario_arm',
-                           json = '',
-                           variants = varts)
-
-    sferes.create_variants(bld,
-                           source = 'scenario_hexa_turn.cpp',
-                           use = 'sferes2',
-                           uselib = libs,
-                           target = 'scenario_hexa_turn',
-                           json = '',
-                           variants = varts)
-    sferes.create_variants(bld,
-                           source = 'scenario_hexa_walk.cpp',
-                           use = 'sferes2',
-                           uselib = libs,
-                           target = 'scenario_hexa_walk',
-                           json = '',
-                           variants = varts)
-
-
-
-    #scenario_arm = bld.new_task_gen('cxx', 'program')
-    #scenario_arm.source = 'scenario_arm.cpp arm_hori.cpp'
-    #scenario_arm.includes = '. ../../'
-    #scenario_arm.uselib_local = 'sferes2'
-    #scenario_arm.uselib = 'EIGEN3 BOOST BOOST_UNIT_TEST_FRAMEWORK  BOOST_TIMER TBB'
-    #scenario_arm.target = 'scenario_arm'
-    #scenario_arm.variants = ['RANDOM', 'FITNESS', 'NOVELTY', 'CURIOSITY']
+     sferes.create_variants(bld,
+                            source = 'scenarii/scenario_hexa_walk.cpp',
+                            use = 'sferes2',
+                            uselib = libs,
+                            target = 'scenario_hexa_walk',
+                            json = '',
+                            variants = varts)
+ 
+     sferes.create_variants(bld,
+                            source = 'scenarii/scenario_planning.cpp',
+                            use = 'sferes2',
+                            uselib = libs,
+                            target = 'scenario_planning',
+                            json = '',
+                            variants = varts)
+ 
+ 
+ 
+     #scenario_arm = bld.new_task_gen('cxx', 'program')
+     #scenario_arm.source = 'scenario_arm.cpp arm_hori.cpp'
+     #scenario_arm.includes = '. ../../'
+     #scenario_arm.uselib_local = 'sferes2'
+     #scenario_arm.uselib = 'EIGEN3 BOOST BOOST_UNIT_TEST_FRAMEWORK  BOOST_TIMER TBB'
+     #scenario_arm.target = 'scenario_arm'
+     #scenario_arm.variants = ['RANDOM', 'FITNESS', 'NOVELTY', 'CURIOSITY']
