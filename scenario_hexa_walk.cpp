@@ -85,7 +85,7 @@ struct Params
   struct nov{
     SFERES_CONST size_t deep=1;
     SFERES_CONST size_t k=15;
-    SFERES_CONST double l=0.2;
+    SFERES_CONST double l=0.25;
     SFERES_CONST double eps=0.1;
     
   };
