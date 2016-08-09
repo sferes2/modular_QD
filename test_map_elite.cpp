@@ -158,9 +158,9 @@ BOOST_AUTO_TEST_CASE(map_elite)
 
     typedef boost::fusion::vector<stat::Map<phen_t, Params>, stat::BestFit<phen_t, Params> > stat_t;
     typedef modif::Dummy<> modifier_t;
-    //typedef ea::MapElite<phen_t, eval_t, stat_t, modifier_t, selector::ScoreProportionate<phen_t>, aggregator::Map<phen_t, Params>, Params> ea_t;
-    //typedef ea::MapElite<phen_t, eval_t, stat_t, modifier_t, selector::Random<phen_t>, aggregator::Map<phen_t, Params>, Params> ea_t;
-    typedef ea::MapElite<phen_t, eval_t, stat_t, modifier_t, selector::Novelty<phen_t>, aggregator::Map<phen_t, Params>, Params> ea_t;
+    //typedef ea::MapElite<phen_t, eval_t, stat_t, modifier_t, selector::ScoreProportionate<phen_t>, container::Map<phen_t, Params>, Params> ea_t;
+    //typedef ea::MapElite<phen_t, eval_t, stat_t, modifier_t, selector::Random<phen_t>, container::Map<phen_t, Params>, Params> ea_t;
+    typedef ea::MapElite<phen_t, eval_t, stat_t, modifier_t, selector::Novelty<phen_t>, container::Map<phen_t, Params>, Params> ea_t;
 
     ea_t ea;
     ea.run();

@@ -43,7 +43,7 @@ namespace sferes{
       }
 
       void operator()(std::vector<indiv_t>& pop,const std::vector<indiv_t>& ea_pop) const {
-	std::pair<double, double> res = get_sum(ea_pop);
+	std::pair<double, double> res = getMinAndSum(ea_pop);
 	double min=res.first;
 	double sum=res.second-min*ea_pop.size();
 	/*if(min!=max){ 
@@ -97,7 +97,7 @@ namespace sferes{
 
     private:
       
-      std::pair<double,double> get_sum(const std::vector<indiv_t>& pop)const
+      std::pair<double,double> getMinAndSum(const std::vector<indiv_t>& pop)const
       {
 	/*_pop= std::vector<indiv_t>(pop);
 	if(_pop.size()==0)

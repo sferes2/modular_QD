@@ -52,7 +52,7 @@
 #include <sferes/fit/fitness.hpp>
 
 #include "selector.hpp"
-#include "aggregator.hpp"
+#include "container.hpp"
 #include "stat.hpp"
 
 namespace sferes
