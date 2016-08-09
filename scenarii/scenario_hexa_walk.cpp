@@ -143,7 +143,7 @@ FIT_MAP(HexaWalkFit)
     template<typename Indiv>
       void eval(Indiv& ind, bool print=false)
     {
-      _dead=false;
+      this->_dead=false;
       std::vector<double> ctrl(ind.size());
       for (size_t i = 0; i < ind.size(); ++i)
 	{
@@ -165,7 +165,7 @@ FIT_MAP(HexaWalkFit)
 
       if(simu.covered_distance()<-1000 || simu.covered_distance() > 1.5) //sanity check
 	{
-	  _dead=true;
+	  this->_dead=true;
 	  if(print)
             {
 	      std::cout<<"DEAD"<<std::endl;
