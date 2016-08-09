@@ -204,7 +204,7 @@ int main()
 {
 
   srand(time(NULL));
-    tbb::task_scheduler_init init(8);  
+    tbb::task_scheduler_init init(20);  
 
     global::activities<<
       0,     0,     0,

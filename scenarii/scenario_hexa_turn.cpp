@@ -165,7 +165,7 @@ FIT_MAP(HexaTurnFit)
 
       if(simu.covered_distance()<-1000)
 	{
-	  _dead=true;
+	  this->_dead=true;
 	  if(print)
             {
 	      std::cout<<"DEAD"<<std::endl;
