@@ -148,7 +148,7 @@ public:
   typedef value_type* pointer;
   typedef pointer const const_pointer;
   typedef value_type& reference;
-  typedef const reference const_reference;
+  typedef reference const_reference;
   typedef Discriminator discriminator_type;
   typedef rectangle_region<key_type> default_region_type;
   // Is this really what we want--two distinct types as
