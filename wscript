@@ -37,52 +37,46 @@ import os
 import sferes
 sys.path.insert(0, sys.path[0]+'/waf_tools')
 print sys.path[0]
-#from waflib.Build import BuildContext
+
 
 from waflib.Configure import conf
 
-#import dart
+
 import robdyn
 import hexapod_controller
 
 
 
 def options(opt) : 
-#    opt.load('dart')
     opt.load('robdyn')
     opt.load('hexapod_controller')
-#    opt.load('hexapod_dart_simu')
     opt.load('hexapod_robdyn_simu')
 
 
 @conf
 def configure(conf): 
     print 'conf exp:'
-#    conf.load('dart')
     conf.load('robdyn')
     conf.load('hexapod_controller')
-#    conf.load('hexapod_dart_simu')
     conf.load('hexapod_robdyn_simu')
-#    conf.check_dart()
     conf.check_robdyn()
     conf.check_hexapod_controller()
-#    conf.check_hexapod_dart_simu()
     conf.check_hexapod_robdyn_simu()
 
 
 def build(bld):
- #   bld.recurse('variants')
      
      libs = 'HEXAPOD_ROBDYN_SIMU HEXAPOD_CONTROLLER ROBDYN ODE  EIGEN BOOST BOOST_UNIT_TEST_FRAMEWORK  BOOST_TIMER TBB '
      
      print ("Entering directory `" + os.getcwd() + "/modules/'")
-     #test_map_elite = bld.new_task_gen('cxx', 'program')
-     #test_map_elite.source = 'test_map_elite.cpp'
-     #test_map_elite.includes = '. ../../'
-     #test_map_elite.uselib_local = 'sferes2'
-     #test_map_elite.uselib = libs
-     #test_map_elite.target = 'test_map_elite'
-     #test_map_elite.unit_test = 1
+
+     bld.program(features = 'cxx test',
+                 source = 'test_qd.cpp',
+                 includes = '. ../../',
+                 uselib = 'EIGEN BOOST BOOST_UNIT_TEST_FRAMEWORK TBB ',
+                 use = 'sferes2',
+                 target = 'test_qd')
+
  
  
      bld.program(features='cxx cxxstlib',
@@ -92,13 +86,13 @@ def build(bld):
                  uselib=libs)
                  
      varts=['GRID RANDOM','GRID NOSELECTION', 'GRID PARETO',
-                                        'GRID FITNESS', 'GRID NOVELTY', 'GRID CURIOSITY',
-                                        'GRID POPFITNESS', 'GRID POPNOVELTY', 'GRID POPCURIOSITY',
-                                        'GRID TOURFITNESS', 'GRID TOURNOVELTY', 'GRID TOURCURIOSITY',
-                                        'ARCHIVE RANDOM','ARCHIVE NOSELECTION', 'ARCHIVE PARETO',
-                                        'ARCHIVE FITNESS','ARCHIVE NOVELTY','ARCHIVE CURIOSITY',
-                                        'ARCHIVE POPFITNESS','ARCHIVE POPNOVELTY','ARCHIVE POPCURIOSITY',
-                                        'ARCHIVE TOURFITNESS','ARCHIVE TOURNOVELTY','ARCHIVE TOURCURIOSITY']
+            'GRID FITNESS', 'GRID NOVELTY', 'GRID CURIOSITY',
+            'GRID POPFITNESS', 'GRID POPNOVELTY', 'GRID POPCURIOSITY',
+            'GRID TOURFITNESS', 'GRID TOURNOVELTY', 'GRID TOURCURIOSITY',
+            'ARCHIVE RANDOM','ARCHIVE NOSELECTION', 'ARCHIVE PARETO',
+            'ARCHIVE FITNESS','ARCHIVE NOVELTY','ARCHIVE CURIOSITY',
+            'ARCHIVE POPFITNESS','ARCHIVE POPNOVELTY','ARCHIVE POPCURIOSITY',
+            'ARCHIVE TOURFITNESS','ARCHIVE TOURNOVELTY','ARCHIVE TOURCURIOSITY']
      sferes.create_variants(bld,
                             source = 'scenarii/scenario_arm.cpp',
                             use = 'sferes2 robot',
@@ -134,10 +128,4 @@ def build(bld):
  
  
  
-     #scenario_arm = bld.new_task_gen('cxx', 'program')
-     #scenario_arm.source = 'scenario_arm.cpp arm_hori.cpp'
-     #scenario_arm.includes = '. ../../'
-     #scenario_arm.uselib_local = 'sferes2'
-     #scenario_arm.uselib = 'EIGEN3 BOOST BOOST_UNIT_TEST_FRAMEWORK  BOOST_TIMER TBB'
-     #scenario_arm.target = 'scenario_arm'
-     #scenario_arm.variants = ['RANDOM', 'FITNESS', 'NOVELTY', 'CURIOSITY']
+ 

@@ -1,5 +1,5 @@
-#ifndef STAT_AGGREGATOR_HPP_
-#define STAT_AGGREGATOR_HPP_
+#ifndef STAT_CONTAINER_HPP_
+#define STAT_CONTAINER_HPP_
 
 #include <numeric>
 #include <sferes/stat/stat.hpp>
@@ -10,7 +10,7 @@ namespace sferes
 {
   namespace stat
   {
-    SFERES_STAT(Aggregator, Stat)
+    SFERES_STAT(Container, Stat)
     {
     public:
       template<typename E>

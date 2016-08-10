@@ -1,5 +1,5 @@
-#ifndef QD_AGGREGATOR_HPP
-#define QD_AGGREGATOR_HPP
+#ifndef QD_CONTAINER_HPP
+#define QD_CONTAINER_HPP
 
 
 #include "container/grid.hpp"

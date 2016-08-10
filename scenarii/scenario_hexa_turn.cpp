@@ -137,7 +137,7 @@ namespace global {
 
 }
 
-FIT_MAP(HexaTurnFit)
+FIT_QD(HexaTurnFit)
 {
     public:
     template<typename Indiv>
@@ -353,7 +353,7 @@ if(narg>2){
     //typedef boost::fusion::vector<stat::Archive<phen_t, Params>, stat::Selection<phen_t,Params> > stat_t;
 #endif
 
-    typedef boost::fusion::vector<stat::Aggregator<phen_t, Params>,stat::Progress<phen_t, Params> > stat_t;
+    typedef boost::fusion::vector<stat::Container<phen_t, Params>,stat::Progress<phen_t, Params> > stat_t;
 
 
 

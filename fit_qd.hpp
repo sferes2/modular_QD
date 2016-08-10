@@ -1,6 +1,6 @@
 //| This file is a part of the sferes2 framework.
-//| Copyright 2009, ISIR / Universite Pierre et Marie Curie (UPMC)
-//| Main contributor(s): Jean-Baptiste Mouret, mouret@isir.fr
+//| Copyright 2009, ISIR / Universite Pierre et Marie Curie (UPMC) / 
+//| Main contributor(s): Antoine Cully a.cully@imperial.ac.uk, Jean-Baptiste Mouret, mouret@isir.fr
 //|
 //| This software is a computer program whose purpose is to facilitate
 //| experiments in evolutionary computation and evolutionary robotics.
@@ -32,6 +32,11 @@
 //| The fact that you are presently reading this means that you have
 //| had knowledge of the CeCILL license and that you accept its terms.
 
+
+#ifndef QD_FIT_QD_HPP__
+#define QD_FIT_QD_HPP__
+
+
 #include <sferes/fit/fitness.hpp>
 
 #define FIT_QD(Name) SFERES_FITNESS(Name, sferes::fit::FitQD)
@@ -43,7 +48,14 @@ namespace sferes
     SFERES_FITNESS(FitQD, sferes::fit::Fitness)
     {
       public:
-      FitQD() : _dead(false),_desc(Params::ea::behav_dim),_novelty(-1000),_curiosity(0),_lq(0) { }
+      FitQD() :
+	_dead(false),
+	_desc(Params::ea::behav_dim),
+	_novelty(-std::numeric_limits<double>::infinity()),
+	_curiosity(-std::numeric_limits<double>::infinity()),
+	_lq(-std::numeric_limits<double>::infinity())
+      {}
+
       const std::vector<float>& desc() const { return _desc; }
       double novelty()const {return _novelty;}
       void set_novelty(double nov) {_novelty=nov;}
@@ -53,7 +65,7 @@ namespace sferes
       double local_quality()const {return _lq;}
       void set_local_quality(double lq) {_lq=lq;}
       
-      void set_desc(std::vector<float> &x) ////void set_desc(boost::array<float,Params::ea::behav_dim> x)
+      void set_desc(std::vector<float> &x)
       {
 	assert(x.size() == Params::ea::behav_dim);
 	for(size_t i = 0; i < x.size(); ++i)
@@ -62,16 +74,18 @@ namespace sferes
 	  }
 	_desc = x;
       }
-    bool dead() {return _dead;}
-
-
-
+      bool dead() const {return _dead;}
+      
+      
+      
     protected:
-    bool _dead;
-    std::vector<float> _desc;
-    double _novelty;
-    double _curiosity;
-    double _lq;
+      bool _dead;
+      std::vector<float> _desc;
+      double _novelty;
+      double _curiosity;
+      double _lq;
     };
   }
 }
+
+#endif

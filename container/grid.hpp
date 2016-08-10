@@ -1,5 +1,5 @@
-#ifndef QD_AGGREGATOR_GRID_HPP
-#define QD_AGGREGATOR_GRID_HPP
+#ifndef QD_CONTAINER_GRID_HPP
+#define QD_CONTAINER_GRID_HPP
 
 
 namespace sferes
@@ -23,7 +23,6 @@ namespace sferes
       typedef typename array_t::multi_array_base::index_range index_range_t;
       typedef boost::detail::multi_array::index_gen<behav_dim, behav_dim> index_gen_t;
       typedef typename array_t::template const_array_view<behav_dim>::type view_t;
-      //typedef boost::detail::multi_array::array_view<behav_dim> myview_t;
       
       typedef boost::array<typename array_t::index, behav_dim> behav_index_t;
       
@@ -35,49 +34,15 @@ namespace sferes
       Grid()
       {
 	assert(behav_dim == Params::ea::behav_shape_size());
-        //boost::array<long int, behav_dim> tmp_shape;
+
         for(size_t i = 0; i < Params::ea::behav_shape_size(); ++i)
 	  behav_shape[i] = Params::ea::behav_shape(i);
 		
-        //boost::array<typename array_t::index, behav_dim> shape = behav_shape;
+        //allocate space for _array and _array_parents
         _array.resize(behav_shape);
         _array_parents.resize(behav_shape);
-	
-        //boost::array<typename array_t::index, behav_dim> shape = {{ 2, 2 }}; //behav_shape
-        //allocate space for _array and _array_parents
       }
 
-
-      // TODO CLEAN THIS MESS. one method with proper usage...
-      //-----------------------------------------------
-      /*long int getindex(const array_t & m, const indiv_t* requestedElement, const unsigned short int direction) const
-      {
-        int offset = requestedElement - m.origin();
-        return (offset / m.strides()[direction] % m.shape()[direction] +  m.index_bases()[direction]);
-      }
-      
-      behav_index_t getindexarray(const array_t & m, const indiv_t* requestedElement ) const
-      {
-        behav_index_t _index;
-        for (unsigned int dir = 0; dir < behav_dim; dir++ )
-	  {
-            _index[dir] = getindex( m, requestedElement, dir );
-	  }
-	
-        return _index;
-	}*/
-      
-      
-      
-      template<typename I>
-      point_t get_point(const I& indiv) const
-      {
-        point_t p;
-        for(size_t i = 0; i < Params::ea::behav_shape_size(); ++i)
-	  p[i] = std::min(1.0f, indiv->fit().desc()[i]);
-
-	return p;
-      }
       
       
       template<typename I>
@@ -94,7 +59,7 @@ namespace sferes
 	return behav_pos;
       }
       
-      //-----------------------------------------------
+
 
 
       void get_full_content(std::vector<indiv_t>& content)
@@ -102,7 +67,6 @@ namespace sferes
 	for(const indiv_t* i = _array.data(); i < (_array.data() + _array.num_elements()); ++i)
 	  if(*i)
 	    content.push_back(*i);
-	  
       }
 
       bool add(indiv_t i1, indiv_t parent)
@@ -135,7 +99,6 @@ namespace sferes
 	  _update_indiv(offspring[i], *this);
 	for(size_t i=0;i<parents.size();i++)
 	  _update_indiv(parents[i], *this);
-	      
       }
 
 
@@ -147,6 +110,18 @@ namespace sferes
     protected:
       
 
+      // Converts the descriptor into a Point_t
+      template<typename I>
+      point_t get_point(const I& indiv) const
+      {
+        point_t p;
+        for(size_t i = 0; i < Params::ea::behav_shape_size(); ++i)
+	  p[i] = std::min(1.0f, indiv->fit().desc()[i]);
+
+	return p;
+      }
+
+      
 
     template<typename I>
     float _dist_center(const I& indiv)

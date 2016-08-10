@@ -1,5 +1,5 @@
-#ifndef QD_AGGREGATOR_ARCHIVE_HPP
-#define QD_AGGREGATOR_ARCHIVE_HPP
+#ifndef QD_CONTAINER_ARCHIVE_HPP
+#define QD_CONTAINER_ARCHIVE_HPP
 
 #include <ssrc/spatial/kd_tree.h>
 #include "tool.hpp"
@@ -278,11 +278,6 @@ namespace sferes
 	void operator() (value_type& v) const
 	{
 	  this->operator()(v.second);
-	  
-	  //auto res = Archive::get_nov_and_lq(v.second,_apop); 
-	  //   v.second->fit().set_novelty(res.first);
-	  //   v.second->fit().set_local_quality(res.second);
-	  
 	}
       };
 

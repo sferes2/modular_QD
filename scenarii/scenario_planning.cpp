@@ -111,7 +111,7 @@ namespace global{
   Eigen::Matrix<int,21,3> activities;
 }
 
-FIT_MAP(PlanningFit)
+FIT_QD(PlanningFit)
 {
     public:
     template<typename Indiv>
@@ -257,7 +257,7 @@ int main()
     //typedef boost::fusion::vector<stat::Archive<phen_t, Params>, stat::Selection<phen_t,Params> > stat_t;
 #endif
 
-    typedef boost::fusion::vector<stat::Aggregator<phen_t, Params>,stat::Progress<phen_t, Params> > stat_t;
+    typedef boost::fusion::vector<stat::Container<phen_t, Params>,stat::Progress<phen_t, Params> > stat_t;
 
 #if defined(RANDOM)
     typedef selector::Random<phen_t> select_t;

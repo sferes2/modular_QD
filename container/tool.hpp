@@ -1,5 +1,5 @@
-#ifndef QD_AGGREGATOR_TOOL_HPP
-#define QD_AGGREGATOR_TOOL_HPP
+#ifndef QD_CONTAINER_TOOL_HPP
+#define QD_CONTAINER_TOOL_HPP
 
 
 
@@ -27,7 +27,7 @@ double _dist(const V1& v1, const V2& v2)
 }
 
 template<typename T>
-      struct _compare_dist_f
+struct _compare_dist_f
 {
   _compare_dist_f(const T& v) : _v(v) {}
   const T _v;
