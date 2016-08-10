@@ -53,8 +53,8 @@
 #include <sferes/run.hpp>
 #include <sferes/stat/best_fit.hpp>
 
-#include "map_elite.hpp"
-#include "fit_map.hpp"
+#include "quality_diversity.hpp"
+#include "fit_qd.hpp"
 
 #include <hexapod_robdyn/hexapod_robdyn_simu.hpp>
 //#include <hexapod_dart/hexapod_dart_simu.hpp>
@@ -344,11 +344,11 @@ if(narg>2){
 
 
 #if defined(GRID)
-    typedef container::Grid<phen_t, Params> aggreg_t;
+    typedef container::Grid<phen_t, Params> container_t;
     //typedef boost::fusion::vector<stat::Map<phen_t, Params>,stat::Progress<phen_t, Params> > stat_t;
 
 #else // ARCHIVE
-    typedef container::Archive<phen_t, Params> aggreg_t;
+    typedef container::Archive<phen_t, Params> container_t;
     //typedef boost::fusion::vector<stat::Archive<phen_t, Params>,stat::Progress<phen_t, Params> > stat_t;
     //typedef boost::fusion::vector<stat::Archive<phen_t, Params>, stat::Selection<phen_t,Params> > stat_t;
 #endif
@@ -384,7 +384,7 @@ if(narg>2){
 
 #endif
 
-    typedef ea::MapElite<phen_t, eval_t, stat_t, modifier_t, select_t, aggreg_t, Params> ea_t;
+    typedef ea::QualityDiversity<phen_t, eval_t, stat_t, modifier_t, select_t, container_t, Params> ea_t;
 
     ea_t ea;
     std::cout<<"start"<<std::endl;

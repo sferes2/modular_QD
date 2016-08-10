@@ -1,5 +1,5 @@
-#ifndef MAP_ELITES_SELECTOR_HPP
-#define MAP_ELITES_SELECTOR_HPP
+#ifndef QD_SELECTOR_HPP
+#define QD_SELECTOR_HPP
 
 #include "selector/valueSelector.hpp"
 #include "selector/random.hpp"

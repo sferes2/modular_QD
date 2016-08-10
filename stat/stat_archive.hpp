@@ -38,7 +38,7 @@ namespace sferes
         std::ofstream ofs(fname.c_str());
 	
         size_t offset = 0;
-        for(auto it = ea.aggreg().archive().begin(); it != ea.aggreg().archive().end(); ++it)
+        for(auto it = ea.container().archive().begin(); it != ea.container().archive().end(); ++it)
 	  {
 	    ofs << offset << "    ";
 	    for(size_t dim = 0; dim < it->second->fit().desc().size(); ++dim)
@@ -62,7 +62,7 @@ namespace sferes
 
 	std::ofstream ofs(fname.c_str(), std::ofstream::out | std::ofstream::app);
 
-        size_t archive_size = ea.aggreg().archive().size();
+        size_t archive_size = ea.container().archive().size();
         double archive_mean = 0.0f;
         double archive_max = 0.0f;
         double sum_novelty = 0.0f;
@@ -70,21 +70,21 @@ namespace sferes
         double var_novelty = 0.0f;
 	double sum_quality = 0.0f;
 
-	for(auto it = ea.aggreg().archive().begin(); it != ea.aggreg().archive().end(); ++it)
+	for(auto it = ea.container().archive().begin(); it != ea.container().archive().end(); ++it)
           {
 	    
 	    archive_mean += it->second->fit().value();
 	    sum_quality += it->second->fit().value();
-	    sum_novelty += ea.aggreg().get_novelty(it->second,ea.aggreg().archive());
+	    sum_novelty += ea.container().get_novelty(it->second,ea.container().archive());
 	    if(archive_max < it->second->fit().value())
 	      archive_max = it->second->fit().value();
 	  }
             
         archive_mean /= archive_size;
 	mean_novelty /= archive_size;
-        for(auto it = ea.aggreg().archive().begin(); it != ea.aggreg().archive().end(); ++it)
+        for(auto it = ea.container().archive().begin(); it != ea.container().archive().end(); ++it)
           {
-	    var_novelty+=std::pow((ea.aggreg().get_novelty(it->second,ea.aggreg().archive()) - mean_novelty),2);
+	    var_novelty+=std::pow((ea.container().get_novelty(it->second,ea.container().archive()) - mean_novelty),2);
 	  }
 	var_novelty /= archive_size;
 

@@ -1,5 +1,5 @@
-#ifndef MAP_ELITES_SELECTOR_PARETOBASED_HPP
-#define MAP_ELITES_SELECTOR_PARETOBASED_HPP
+#ifndef QD_SELECTOR_PARETOBASED_HPP
+#define QD_SELECTOR_PARETOBASED_HPP
 
 #include <sferes/ea/dom_sort.hpp>
 #include "crowd_genodiv.hpp"

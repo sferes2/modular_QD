@@ -33,8 +33,8 @@
 //| had knowledge of the CeCILL license and that you accept its terms.
 
 
-#ifndef MAP_ELITE_HPP_
-#define MAP_ELITE_HPP_
+#ifndef QD_HPP_
+#define QD_HPP_
 
 #include <algorithm>
 #include <limits>
@@ -62,8 +62,8 @@ namespace ea
 
 // Main class
 // extended version of SFERES_EA with Select and Aggreg
-  template<typename Phen, typename Eval, typename Stat, typename FitModifier, typename Select, typename Aggreg , typename Params, typename Exact = stc::Itself>
-  class MapElite : public ea::Ea < Phen, Eval, Stat, FitModifier, Params,typename stc::FindExact<MapElite<Phen, Eval, Stat, FitModifier,Select, Aggreg , Params, Exact>, Exact>::ret >
+  template<typename Phen, typename Eval, typename Stat, typename FitModifier, typename Select, typename Container , typename Params, typename Exact = stc::Itself>
+  class QualityDiversity : public ea::Ea < Phen, Eval, Stat, FitModifier, Params,typename stc::FindExact<QualityDiversity<Phen, Eval, Stat, FitModifier,Select, Container , Params, Exact>, Exact>::ret >
   {
     public:
     typedef boost::shared_ptr<Phen> indiv_t;
@@ -71,45 +71,13 @@ namespace ea
     typedef typename pop_t::iterator it_t;
     typedef typename std::vector<std::vector<indiv_t> > front_t;
 
-    //typedef boost::array<float, 2> point_t;
-
-
     typedef boost::shared_ptr<Phen> phen_t;
-    //typedef boost::multi_array<phen_t, 2> array_t;
 
-
-    /*static const size_t res_x = Params::ea::res_x;
-      static const size_t res_y = Params::ea::res_y;*/
-
-    //static const size_t behav_dim = Params::ea::behav_shape_size();
     static const size_t behav_dim = Params::ea::behav_dim;
     typedef boost::array<float, behav_dim> point_t;
 
 
-    MapElite(){}
-    /*    {
-        // - my_type my_name(size_t i)
-        // - size_t my_name_size()
-
-        assert(behav_dim == Params::ea::behav_shape_size());
-        //boost::array<long int, behav_dim> tmp_shape;
-        for(size_t i = 0; i < Params::ea::behav_shape_size(); ++i)
-            behav_shape[i] = Params::ea::behav_shape(i);
-
-
-        //boost::array<typename array_t::index, behav_dim> shape = behav_shape;
-        _array.resize(behav_shape);
-        _array_parents.resize(behav_shape);
-
-        //boost::array<typename array_t::index, behav_dim> shape = {{ 2, 2 }}; //behav_shape
-        //allocate space for _array and _array_parents
-	}*/
-
-    /*MapElite() :
-    _array(boost::extents[res_x][res_y]),
-    _array_parents(boost::extents[res_x][res_y])
-      {
-      }*/
+    QualityDiversity(){}
 
     void random_pop()
     {
@@ -136,7 +104,7 @@ namespace ea
       _add(_offspring,_offspring);
 
       this->_pop.clear();
-      _aggreg.get_full_content(this->_pop);
+      _container.get_full_content(this->_pop);
     }
 
 
@@ -144,13 +112,9 @@ namespace ea
     {
       
       //_parents.resize(Params::pop::size);// THE SIZE OF THE PARENTS IS PROVIDED DURING THE INIT
-      //CLEAN OFFSPRING and PARENTS AFTER SELECT as it can be used by Select
+
       _select(_parents,*this);
-      
-
-      _offspring.clear();
-
-
+      _offspring.clear();       //CLEAR _offspring and _parents ONLY after Select, as it can be used by Select
 
       std::vector<size_t> a;
       misc::rand_ind(a, _parents.size());
@@ -172,7 +136,7 @@ namespace ea
 
       assert(_offspring.size() == _parents.size());
       this->_pop.clear();
-      _aggreg.get_full_content(this->_pop);
+      _container.get_full_content(this->_pop);
       
     }
 
@@ -180,10 +144,10 @@ namespace ea
     template<typename I>
     point_t get_point(const I& indiv) const
     {
-      return _aggreg.get_point(indiv);
+      return _container.get_point(indiv);
     }
     
-    const Aggreg& aggreg()const {return _aggreg;}
+    const Container& container()const {return _container;}
 
     const pop_t& pop()const {return this->_pop;}
     const pop_t& offspring()const {return _offspring;}
@@ -192,8 +156,8 @@ namespace ea
     protected:
 
 
-      bool _add_to_aggreg(indiv_t i1, indiv_t parent){
-	if( _aggreg.add(i1,parent))
+      bool _add_to_container(indiv_t i1, indiv_t parent){
+	if( _container.add(i1,parent))
 	  {
 	    parent->fit().set_curiosity(parent->fit().curiosity()+1);
 	    return true;
@@ -209,15 +173,15 @@ namespace ea
     {
       _added.resize(pop_off.size());
       for (size_t i = 0; i < pop_off.size(); ++i)
-	_added[i]=_add_to_aggreg(pop_off[i], pop_parents[i]);
-      _aggreg.update(pop_off, pop_parents);
+	_added[i]=_add_to_container(pop_off[i], pop_parents[i]);
+      _container.update(pop_off, pop_parents);
       
     }
 
 
     
     Select _select;
-    Aggreg _aggreg;
+    Container _container;
     
     pop_t _offspring, _parents;
     std::vector<bool> _added;

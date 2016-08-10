@@ -1,5 +1,5 @@
-#ifndef MAP_ELITES_AGGREGATOR_HPP
-#define MAP_ELITES_AGGREGATOR_HPP
+#ifndef QD_AGGREGATOR_HPP
+#define QD_AGGREGATOR_HPP
 
 
 #include "container/grid.hpp"

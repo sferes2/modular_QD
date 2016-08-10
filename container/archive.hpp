@@ -1,5 +1,5 @@
-#ifndef MAP_ELITES_AGGREGATOR_ARCHIVE_HPP
-#define MAP_ELITES_AGGREGATOR_ARCHIVE_HPP
+#ifndef QD_AGGREGATOR_ARCHIVE_HPP
+#define QD_AGGREGATOR_ARCHIVE_HPP
 
 #include <ssrc/spatial/kd_tree.h>
 #include "tool.hpp"

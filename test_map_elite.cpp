@@ -53,8 +53,8 @@
 #include <sferes/run.hpp>
 #include <sferes/stat/best_fit.hpp>
 
-#include "map_elite.hpp"
-#include "fit_map.hpp"
+#include "quality_diversity.hpp"
+#include "fit_qd.hpp"
 #include "stat_map.hpp"
 
 
@@ -158,9 +158,9 @@ BOOST_AUTO_TEST_CASE(map_elite)
 
     typedef boost::fusion::vector<stat::Map<phen_t, Params>, stat::BestFit<phen_t, Params> > stat_t;
     typedef modif::Dummy<> modifier_t;
-    //typedef ea::MapElite<phen_t, eval_t, stat_t, modifier_t, selector::ScoreProportionate<phen_t>, container::Map<phen_t, Params>, Params> ea_t;
-    //typedef ea::MapElite<phen_t, eval_t, stat_t, modifier_t, selector::Random<phen_t>, container::Map<phen_t, Params>, Params> ea_t;
-    typedef ea::MapElite<phen_t, eval_t, stat_t, modifier_t, selector::Novelty<phen_t>, container::Map<phen_t, Params>, Params> ea_t;
+    //typedef ea::QualityDiversity<phen_t, eval_t, stat_t, modifier_t, selector::ScoreProportionate<phen_t>, container::Map<phen_t, Params>, Params> ea_t;
+    //typedef ea::QualityDiversity<phen_t, eval_t, stat_t, modifier_t, selector::Random<phen_t>, container::Map<phen_t, Params>, Params> ea_t;
+    typedef ea::QualityDiversity<phen_t, eval_t, stat_t, modifier_t, selector::Novelty<phen_t>, container::Map<phen_t, Params>, Params> ea_t;
 
     ea_t ea;
     ea.run();

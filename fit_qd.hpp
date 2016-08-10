@@ -34,16 +34,16 @@
 
 #include <sferes/fit/fitness.hpp>
 
-#define FIT_MAP(Name) SFERES_FITNESS(Name, sferes::fit::FitMap)
+#define FIT_QD(Name) SFERES_FITNESS(Name, sferes::fit::FitQD)
 
 namespace sferes
 {
   namespace fit
   {
-    SFERES_FITNESS(FitMap, sferes::fit::Fitness)
+    SFERES_FITNESS(FitQD, sferes::fit::Fitness)
     {
       public:
-      FitMap() : _dead(false),_desc(Params::ea::behav_dim),_novelty(-1000),_curiosity(0),_lq(0) { }
+      FitQD() : _dead(false),_desc(Params::ea::behav_dim),_novelty(-1000),_curiosity(0),_lq(0) { }
       const std::vector<float>& desc() const { return _desc; }
       double novelty()const {return _novelty;}
       void set_novelty(double nov) {_novelty=nov;}
