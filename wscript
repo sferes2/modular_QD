@@ -48,17 +48,22 @@ import hexapod_controller
 
 
 def options(opt) : 
+    opt.load('ode')
     opt.load('robdyn')
     opt.load('hexapod_controller')
     opt.load('hexapod_robdyn_simu')
 
 
+        
+
 @conf
 def configure(conf): 
     print 'conf exp:'
+    conf.load('ode')
     conf.load('robdyn')
     conf.load('hexapod_controller')
     conf.load('hexapod_robdyn_simu')
+    conf.check_ode()
     conf.check_robdyn()
     conf.check_hexapod_controller()
     conf.check_hexapod_robdyn_simu()
@@ -70,12 +75,12 @@ def build(bld):
      
      print ("Entering directory `" + os.getcwd() + "/modules/'")
 
-     bld.program(features = 'cxx test',
-                 source = 'test_qd.cpp',
-                 includes = '. ../../',
-                 uselib = 'EIGEN BOOST BOOST_UNIT_TEST_FRAMEWORK TBB ',
-                 use = 'sferes2',
-                 target = 'test_qd')
+#     bld.program(features = 'cxx test',
+#                 source = 'test_qd.cpp',
+#                 includes = '. ../../',
+#                 uselib = 'EIGEN BOOST BOOST_UNIT_TEST_FRAMEWORK TBB ',
+#                 use = 'sferes2',
+#                 target = 'test_qd')
 
  
  
