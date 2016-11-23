@@ -99,7 +99,6 @@ def build(bld):
                             includes='. .. ../../ ./scenarii/',
                             uselib = libs,
                             target = 'scenario_arm',
-                            json = '',
                             variants = varts)
  
      sferes.create_variants(bld,
@@ -107,7 +106,6 @@ def build(bld):
                             use = 'sferes2',
                             uselib = libs,
                             target = 'scenario_hexa_turn',
-                            json = '',
                             variants = varts)
 
      sferes.create_variants(bld,
@@ -115,7 +113,6 @@ def build(bld):
                             use = 'sferes2',
                             uselib = libs,
                             target = 'scenario_hexa_walk',
-                            json = '',
                             variants = varts)
  
      sferes.create_variants(bld,
@@ -123,7 +120,6 @@ def build(bld):
                             use = 'sferes2',
                             uselib = libs,
                             target = 'scenario_planning',
-                            json = '',
                             variants = varts)
  
  

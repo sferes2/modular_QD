@@ -62,7 +62,7 @@ namespace sferes
 
 
 
-      void get_full_content(std::vector<indiv_t>& content)
+      void get_full_content(std::vector<indiv_t>& content) const
       {
 	for(const indiv_t* i = _array.data(); i < (_array.data() + _array.num_elements()); ++i)
 	  if(*i)
