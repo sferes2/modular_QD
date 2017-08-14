@@ -52,8 +52,8 @@ namespace sferes
 	_dead(false),
 	_desc(Params::ea::behav_dim),
 	_novelty(-std::numeric_limits<double>::infinity()),
-	_curiosity(-std::numeric_limits<double>::infinity()),
-	_lq(-std::numeric_limits<double>::infinity())
+	_curiosity(0),
+	_lq(0)
       {}
 
       const std::vector<float>& desc() const { return _desc; }
