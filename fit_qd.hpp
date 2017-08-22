@@ -68,10 +68,10 @@ namespace sferes
       void set_desc(std::vector<float> &x)
       {
 	assert(x.size() == Params::ea::behav_dim);
-	for(size_t i = 0; i < x.size(); ++i)
+	/*for(size_t i = 0; i < x.size(); ++i)
 	  {
 	    assert(x[i] >= 0.0 && x[i] <= 1.0);
-	  }
+	    }*/
 	_desc = x;
       }
       bool dead() const {return _dead;}

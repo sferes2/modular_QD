@@ -35,6 +35,7 @@ namespace sferes
         std::ofstream ofs(fname.c_str());
 	
         size_t offset = 0;
+	ofs.precision(17);
         for(auto it = ea.pop().begin(); it != ea.pop().end(); ++it)
 	  {
 	    ofs << offset << "    ";

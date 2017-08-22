@@ -78,6 +78,9 @@ namespace sferes
       
       QualityDiversity(){}
 
+
+
+      
       // Random initialization of _parents and _offspring
       void random_pop()
       {

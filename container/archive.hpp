@@ -38,7 +38,7 @@ namespace sferes
 	  return false;
 	if (_archive.size()==0 ||/*_archive.size()<Params::nov::k ||*/ _dist(get_nearest(i1,_archive,false)->fit().desc(), i1->fit().desc()) > Params::nov::l) //ADD because new
 	  {
-	    _add(i1);
+	    direct_add(i1);
 	    return true;
 	  }
 	else if(_archive.size()==1) //there is only one indiv in the archive and the current one is too close
@@ -60,10 +60,12 @@ namespace sferes
 	    score_nn[0]=nn->fit().value();
 	    //Compute the Novelty
 	    neigh_current.clear();
-	    if(_archive.size()<Params::nov::k+1)
-	      get_knn(i1, _archive, _archive.size(), neigh_current, false); //Be careful, the first one referes to nn 
-	    else
-	      get_knn(i1, _archive, Params::nov::k+1, neigh_current, false); //Be careful, the first one referes to nn 
+	    if(_archive.size()<Params::nov::k+1){
+	      get_knn(i1, _archive, _archive.size(), neigh_current, false); //Be careful, the first one referes to nn
+	    }
+	    else{
+	      get_knn(i1, _archive, Params::nov::k+1, neigh_current, false); //Be careful, the first one referes to nn
+	    }
 	    score_cur[1] = get_novelty( i1 , neigh_current.begin()++, neigh_current.end());
 	    score_nn[1] = get_novelty( nn , _archive);
 	    //TEST
@@ -143,14 +145,14 @@ namespace sferes
 	for(knn_iterator_t it = range.first, end = range.second; it != end && nearest.size() < k; ++it)
 	  //for (size_t z = 0; z < it->second && nearest.size() < Params::nov::k; ++z)
 	  nearest.push_back(it->second);
-	
+	//std::cout<<apop.size()<<"  "<<nearest.size()<<"  "<<k<<std::endl;
 	assert(nearest.size() == k);
       }
 
       static double get_novelty(const indiv_t& indiv, const Tree&  apop) {
 	pop_t nearest;
-	if(apop.size()<Params::nov::k)
-	  get_knn(indiv,apop,apop.size(),nearest,true); //here we omit because indivs are in the archive
+	if(apop.size()<(Params::nov::k+1))
+	  get_knn(indiv,apop,apop.size()-1,nearest,true); //here we omit because indivs are in the archive
 	else
 	  get_knn(indiv,apop,Params::nov::k,nearest,true); //here we omit because indivs are in the archive
 	
@@ -165,11 +167,6 @@ namespace sferes
       }
 
       static double get_novelty(const indiv_t& indiv, typename pop_t::iterator begin, typename pop_t::iterator end) { 
-	if(std::distance(begin,end)>Params::nov::k){
-	  //NEED to sort
-	  //  std::sort(begin,end,_compare_dist_f(indiv));
-	  assert(false);
-	}
 	double sum =0;
 	typename pop_t::iterator it= begin;
 	//for(int i =0;i<Params::nov::k; i++){
@@ -183,11 +180,11 @@ namespace sferes
       static std::pair<double, double> get_nov_and_lq(const indiv_t& indiv, const Tree&  apop)
       {
 	pop_t nearest;
-	if(apop.size()<Params::nov::k)
-	  get_knn(indiv,apop,apop.size(),nearest,true); //here we omit because indivs are in the archive
+	if(apop.size()<(Params::nov::k+1))
+	  get_knn(indiv,apop,apop.size()-1,nearest,true); //here we omit because indivs are in the archive
 	else
 	  get_knn(indiv,apop,Params::nov::k,nearest,true); //here we omit because indivs are in the archive
-	
+
 	return std::pair<double, double> (get_novelty( indiv,nearest.begin(), nearest.end()),
 					  get_lq( indiv,nearest.begin(), nearest.end()));
 	
@@ -217,10 +214,9 @@ namespace sferes
 
       const Tree& archive() const{return _archive;}
   
-    protected:
 
 
-      void _add(const indiv_t& tobeinserted)
+      void direct_add(const indiv_t& tobeinserted)
       {
 	point_t p;
 	this->_behavior_to_point(tobeinserted->fit().desc(), &p);
@@ -231,12 +227,14 @@ namespace sferes
 	  }
       }
 
+    protected:
+
       void _replace(const indiv_t& toberemoved,const indiv_t& tobeinserted){
 	point_t remove;
 	this->_behavior_to_point(toberemoved->fit().desc(), &remove);
 	_archive.remove(remove);
 	    //std::cout<<"problem remove"<<std::endl;
-	_add(tobeinserted);
+	direct_add(tobeinserted);
       }
 
 
