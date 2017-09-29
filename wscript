@@ -75,12 +75,12 @@ def build(bld):
      
      print ("Entering directory `" + os.getcwd() + "/modules/'")
 
-#     bld.program(features = 'cxx test',
-#                 source = 'test_qd.cpp',
-#                 includes = '. ../../',
-#                 uselib = 'EIGEN BOOST BOOST_UNIT_TEST_FRAMEWORK TBB ',
-#                 use = 'sferes2',
-#                 target = 'test_qd')
+     bld.program(features = 'cxx',
+                 source = 'test_qd.cpp',
+                 includes = '. ../../',
+                 uselib = 'EIGEN BOOST BOOST_UNIT_TEST_FRAMEWORK TBB ',
+                 use = 'sferes2',
+                 target = 'test_qd')
 
  
  
