@@ -76,7 +76,7 @@ namespace sferes
       }
       bool dead() const {return _dead;}
       
-      
+      void set_value(float val){this->_value=val;}
       
     protected:
       bool _dead;

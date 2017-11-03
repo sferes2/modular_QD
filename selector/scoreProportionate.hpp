@@ -28,7 +28,9 @@ namespace sferes{
 
 	for (auto& indiv : pop)
 	  {
-	    double r= misc::rand((double) sum);
+	    double r=0;
+	    if(sum)
+	      r= misc::rand((double) sum);
 	    itc_t it=ea_pop.cbegin();
 	    double p = (ValueSelector::getValue(*it)-min);
 
