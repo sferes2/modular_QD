@@ -93,6 +93,7 @@ namespace sferes
 	  }
 	
 	this->_eval_pop(this->_parents, 0, this->_parents.size());
+	this->apply_modifier();
 	_add(_parents,_parents);
 	
 	
@@ -104,6 +105,7 @@ namespace sferes
 	  }
 	
 	this->_eval_pop(this->_offspring, 0, this->_offspring.size());
+	this->apply_modifier();
 	_add(_offspring,_offspring);
 	
 	this->_pop.clear();
@@ -135,6 +137,7 @@ namespace sferes
 
 	// Evaluation of the offspring
 	this->_eval_pop(_offspring, 0, _offspring.size());
+	this->apply_modifier();
 
 	// Addition of the offspring to the container
 	_add(_offspring,_parents);
