@@ -85,19 +85,20 @@ namespace sferes
       void random_pop()
       {
 	parallel::init();
-	_parents.resize(Params::pop::size);
-	BOOST_FOREACH(boost::shared_ptr<Phen>&indiv, this->_parents)
+	_offspring.resize(Params::pop::size);
+	BOOST_FOREACH(boost::shared_ptr<Phen>&indiv, this->_offspring)
 	  {
 	    indiv = boost::shared_ptr<Phen>(new Phen());
 	    indiv->random();
 	  }
 	
-	this->_eval_pop(this->_parents, 0, this->_parents.size());
+	this->_eval_pop(this->_offspring, 0, this->_offspring.size());
 	this->apply_modifier();
 	_add(_parents,_parents);
-	
-	
+
+	this->_parents=this->_offspring;
 	_offspring.resize(Params::pop::size);
+
 	BOOST_FOREACH(boost::shared_ptr<Phen>&indiv, this->_offspring)
 	  {
 	    indiv = boost::shared_ptr<Phen>(new Phen());
