@@ -56,7 +56,8 @@
 #include "quality_diversity.hpp"
 #include "fit_qd.hpp"
 #include "stat.hpp"
-
+#include "selector.hpp"
+#include "container.hpp"
 
 
 /*#define NO_MPI

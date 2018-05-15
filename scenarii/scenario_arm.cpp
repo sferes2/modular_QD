@@ -52,6 +52,9 @@
 #include "quality_diversity.hpp"
 #include "fit_qd.hpp"
 
+#include "selector.hpp"
+#include "container.hpp"
+#include "stat.hpp"
 
 #include "arm_hori.hpp"
 

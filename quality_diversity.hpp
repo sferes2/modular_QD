@@ -51,10 +51,6 @@
 #include <sferes/ea/ea.hpp>
 #include <sferes/fit/fitness.hpp>
 
-#include "selector.hpp"
-#include "container.hpp"
-#include "stat.hpp"
-
 namespace sferes
 {
   namespace ea
