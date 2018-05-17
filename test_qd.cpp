@@ -56,8 +56,8 @@
 #include "quality_diversity.hpp"
 #include "fit_qd.hpp"
 #include "stat.hpp"
-
-
+#include "variator/standard.hpp"
+#include "updater/grid_qd.hpp"
 
 /*#define NO_MPI
 #ifdef GRAPHIC
@@ -74,17 +74,14 @@
 #include <sferes/eval/eval.hpp>
 #endif*/
 
-
-
 using namespace sferes::gen::evo_float;
-
 
 struct Params
 {
-
-  struct nov{
-    SFERES_CONST size_t deep=2;
-  };
+    struct nov
+    {
+        SFERES_CONST size_t deep = 2;
+    };
     struct ea
     {
         /*SFERES_CONST size_t res_x = 256;
@@ -92,7 +89,6 @@ struct Params
 
         SFERES_CONST size_t behav_dim = 2;
         SFERES_ARRAY(size_t, behav_shape, 256, 256);
-
     };
     struct pop
     {
@@ -117,27 +113,23 @@ struct Params
         SFERES_CONST mutation_t mutation_type = polynomial;
         SFERES_CONST cross_over_t cross_over_type = sbx;
     };
-
 };
-
 
 // Rastrigin
-FIT_QD(Rastrigin)
-{
-    public:
-    template<typename Indiv>
-    void eval(Indiv& ind)
-    {
-        float f = 10 * ind.size();
-        for (size_t i = 0; i < ind.size(); ++i)
-            f += ind.data(i) * ind.data(i) - 10 * cos(2 * M_PI * ind.data(i));
-        this->_value = -f;
+FIT_QD(Rastrigin){
+    public :
+        template <typename Indiv>
+        void eval(Indiv & ind){
+            float f = 10 * ind.size();
+for (size_t i = 0; i < ind.size(); ++i)
+    f += ind.data(i) * ind.data(i) - 10 * cos(2 * M_PI * ind.data(i));
+this->_value = -f;
 
-        std::vector<float> data = {ind.gen().data(0), ind.gen().data(1)};
-        this->set_desc(data);
-    }
-
-};
+std::vector<float> data = {ind.gen().data(0), ind.gen().data(1)};
+this->set_desc(data);
+}
+}
+;
 
 BOOST_AUTO_TEST_CASE(quality_diversity)
 {
@@ -149,9 +141,14 @@ BOOST_AUTO_TEST_CASE(quality_diversity)
 
     typedef eval::Parallel<Params> eval_t;
 
-    typedef boost::fusion::vector<stat::Container<phen_t, Params>, stat::BestFit<phen_t, Params> > stat_t;
+    typedef boost::fusion::vector<stat::Container<phen_t, Params>, stat::BestFit<phen_t, Params>> stat_t;
     typedef modif::Dummy<> modifier_t;
-    typedef ea::QualityDiversity<phen_t, eval_t, stat_t, modifier_t, selector::Random<phen_t>, container::Grid<phen_t, Params>, Params> ea_t; //equivalent to MAP-Elites
+    typedef selector::Random<phen_t> selector_t;
+    typedef variator::Standard<phen_t, Params> variator_t;
+    typedef container::Grid<phen_t, Params> container_t;
+    typedef updater::GridQD<container_t, phen_t, Params> updater_t;
+
+    typedef ea::QualityDiversity<phen_t, eval_t, stat_t, modifier_t, selector_t, variator_t, container_t, updater_t, Params> ea_t; //equivalent to MAP-Elites
 
     ea_t ea;
     ea.run();
