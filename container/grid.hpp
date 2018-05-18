@@ -12,12 +12,14 @@ public:
   typedef boost::shared_ptr<Phen> indiv_t;
   typedef typename std::vector<indiv_t> pop_t;
   typedef typename pop_t::iterator it_t;
-  // typedef typename std::vector<std::vector<indiv_t>> front_t;
 
   static const size_t behav_dim = Params::ea::behav_dim;
   typedef boost::multi_array<indiv_t, behav_dim> array_t;
   typedef boost::array<typename array_t::index, behav_dim> behav_index_t;
   typedef boost::array<float, behav_dim> point_t;
+  typedef typename array_t::multi_array_base::index_range index_range_t;
+  typedef boost::detail::multi_array::index_gen<behav_dim, behav_dim> index_gen_t;
+  typedef typename array_t::template const_array_view<behav_dim>::type view_t;
 
   behav_index_t behav_shape;
 
@@ -33,18 +35,12 @@ public:
     _array_parents.resize(behav_shape);
   }
 
-  template <typename I>
-  behav_index_t get_index(const I &indiv) const
+  std::vector<indiv_t> get_neighbors(const indiv_t &indiv) const
   {
-    point_t p = get_point(indiv);
-    behav_index_t behav_pos;
-    for (size_t i = 0; i < Params::ea::behav_shape_size(); ++i)
-    {
-      behav_pos[i] = round(p[i] * (behav_shape[i] - 1));
-      //behav_pos[i] = std::min(behav_pos[i], behav_shape[i] - 1);
-      assert(behav_pos[i] < behav_shape[i]);
-    }
-    return behav_pos;
+    view_t neighborhood = _get_neighborhood(indiv);
+    std::vector<indiv_t> neigh;
+    iterate(neighborhood, neigh);
+    return neigh;
   }
 
   void get_full_content(std::vector<indiv_t> &content) const
@@ -60,12 +56,14 @@ public:
 
     for (size_t i = 0; i < offspring.size(); ++i)
       added[i] = _add(offspring[i], parents[i]);
-    
+
     return added;
   }
 
-  const array_t &archive() const { return _array; }
-  const array_t &parents() const { return _array_parents; }
+  // const array_t &archive() const { return _array; }
+  // const array_t &parents() const { return _array_parents; }
+  array_t &archive() { return _array; }
+  array_t &parents() { return _array_parents; }
 
 protected:
   array_t _array;
@@ -100,7 +98,7 @@ protected:
     if (i1->fit().dead())
       return false;
 
-    behav_index_t behav_pos = get_index(i1);
+    behav_index_t behav_pos = _get_index(i1);
 
     float epsilon = 0.00;
     if (!_array(behav_pos) || (i1->fit().value() - _array(behav_pos)->fit().value()) > epsilon || (fabs(i1->fit().value() - _array(behav_pos)->fit().value()) <= epsilon && _dist_center(i1) < _dist_center(_array(behav_pos))))
@@ -111,6 +109,66 @@ protected:
     }
     return false;
   }
+
+  behav_index_t _get_index(const indiv_t &indiv) const
+  {
+    point_t p = get_point(indiv);
+    behav_index_t behav_pos;
+    for (size_t i = 0; i < Params::ea::behav_shape_size(); ++i)
+    {
+      behav_pos[i] = round(p[i] * (behav_shape[i] - 1));
+      //behav_pos[i] = std::min(behav_pos[i], behav_shape[i] - 1);
+      assert(behav_pos[i] < behav_shape[i]);
+    }
+    return behav_pos;
+  }
+
+  view_t _get_neighborhood(const indiv_t &indiv) const
+  {
+    behav_index_t ind = _get_index(indiv);
+    index_gen_t indix;
+    int i = 0;
+    for (auto it = indix.ranges_.begin(); it != indix.ranges_.end(); it++)
+    {
+      *it = index_range_t(std::max((int)ind[i] - (int)Params::nov::deep, 0), std::min(ind[i] + Params::nov::deep + 1, (size_t)behav_shape[i])); //bound! so stop at id[i]+2-1
+
+      i++;
+    }
+
+    view_t ngbh = _array[indix];
+    return ngbh;
+  }
+
+  // Functor to iterate over a Boost MultiArray concept instance.
+    template <typename T, typename V, size_t Dimensions = T::dimensionality>
+    struct IterateHelper
+    {
+        void operator()(T &array, V &vect) const
+        {
+            for (auto element : array)
+                IterateHelper<decltype(element), V>()(element, vect);
+        }
+    };
+
+    // Functor specialization for the final dimension.
+    template <typename T, typename V>
+    struct IterateHelper<T, V, 1>
+    {
+        void operator()(T &array, V &vect) const
+        {
+            for (auto &element : array)
+                if (element)
+                    vect.push_back(element);
+        }
+    };
+
+    // Utility function to apply a function to each element of a Boost
+    // MultiArray concept instance (which includes views).
+    template <typename T, typename V>
+    static void iterate(T &array, V &vect)
+    {
+        IterateHelper<T, V>()(array, vect);
+    }
 };
 } // namespace container
 } // namespace sferes

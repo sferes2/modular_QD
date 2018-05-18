@@ -8,7 +8,7 @@ namespace sferes
 {
 namespace updater
 {
-template <typename Container, typename Phen, typename Params> // think about what other typenames are needed
+template <typename Container, typename Phen, typename Params>
 struct Dummy
 {
     typedef boost::shared_ptr<Phen> indiv_t;

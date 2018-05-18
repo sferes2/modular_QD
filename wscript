@@ -1,4 +1,4 @@
-#! /usr/bin/env python
+#!/usr/bin/env python
 #| This file is a part of the sferes2 framework.
 #| Copyright 2009, ISIR / Universite Pierre et Marie Curie (UPMC)
 #| Main contributor(s): Jean-Baptiste Mouret, mouret@isir.fr
@@ -82,50 +82,49 @@ def build(bld):
                  use = 'sferes2',
                  target = 'test_qd')
 
- 
- 
-     bld.program(features='cxx cxxstlib',
-                 source='scenarii/arm_hori.cpp',
-                 includes='. .. ../../',
-                 target='robot',
-                 uselib=libs)
-                 
-     varts=['GRID RANDOM','GRID NOSELECTION', 'GRID PARETO',
-            'GRID FITNESS', 'GRID NOVELTY', 'GRID CURIOSITY',
-            'GRID POPFITNESS', 'GRID POPNOVELTY', 'GRID POPCURIOSITY',
-            'GRID TOURFITNESS', 'GRID TOURNOVELTY', 'GRID TOURCURIOSITY',
-            'ARCHIVE RANDOM','ARCHIVE NOSELECTION', 'ARCHIVE PARETO',
-            'ARCHIVE FITNESS','ARCHIVE NOVELTY','ARCHIVE CURIOSITY',
-            'ARCHIVE POPFITNESS','ARCHIVE POPNOVELTY','ARCHIVE POPCURIOSITY',
-            'ARCHIVE TOURFITNESS','ARCHIVE TOURNOVELTY','ARCHIVE TOURCURIOSITY']
-     sferes.create_variants(bld,
-                            source = 'scenarii/scenario_arm.cpp',
-                            use = 'sferes2 robot',
-                            includes='. .. ../../ ./scenarii/',
-                            uselib = libs,
-                            target = 'scenario_arm',
-                            variants = varts)
- 
-     sferes.create_variants(bld,
-                            source = 'scenarii/scenario_hexa_turn.cpp',
-                            use = 'sferes2',
-                            uselib = libs,
-                            target = 'scenario_hexa_turn',
-                            variants = varts)
 
-     sferes.create_variants(bld,
-                            source = 'scenarii/scenario_hexa_walk.cpp',
-                            use = 'sferes2',
-                            uselib = libs,
-                            target = 'scenario_hexa_walk',
-                            variants = varts)
+    #  bld.program(features='cxx cxxstlib',
+    #              source='scenarii/arm_hori.cpp',
+    #              includes='. .. ../../',
+    #              target='robot',
+    #              uselib=libs)
+                 
+    #  varts=['GRID RANDOM','GRID NOSELECTION', 'GRID PARETO',
+    #         'GRID FITNESS', 'GRID NOVELTY', 'GRID CURIOSITY',
+    #         'GRID POPFITNESS', 'GRID POPNOVELTY', 'GRID POPCURIOSITY',
+    #         'GRID TOURFITNESS', 'GRID TOURNOVELTY', 'GRID TOURCURIOSITY',
+    #         'ARCHIVE RANDOM','ARCHIVE NOSELECTION', 'ARCHIVE PARETO',
+    #         'ARCHIVE FITNESS','ARCHIVE NOVELTY','ARCHIVE CURIOSITY',
+    #         'ARCHIVE POPFITNESS','ARCHIVE POPNOVELTY','ARCHIVE POPCURIOSITY',
+    #         'ARCHIVE TOURFITNESS','ARCHIVE TOURNOVELTY','ARCHIVE TOURCURIOSITY']
+    #  sferes.create_variants(bld,
+    #                         source = 'scenarii/scenario_arm.cpp',
+    #                         use = 'sferes2 robot',
+    #                         includes='. .. ../../ ./scenarii/',
+    #                         uselib = libs,
+    #                         target = 'scenario_arm',
+    #                         variants = varts)
  
-     sferes.create_variants(bld,
-                            source = 'scenarii/scenario_planning.cpp',
-                            use = 'sferes2',
-                            uselib = libs,
-                            target = 'scenario_planning',
-                            variants = varts)
+    #  sferes.create_variants(bld,
+    #                         source = 'scenarii/scenario_hexa_turn.cpp',
+    #                         use = 'sferes2',
+    #                         uselib = libs,
+    #                         target = 'scenario_hexa_turn',
+    #                         variants = varts)
+
+    #  sferes.create_variants(bld,
+    #                         source = 'scenarii/scenario_hexa_walk.cpp',
+    #                         use = 'sferes2',
+    #                         uselib = libs,
+    #                         target = 'scenario_hexa_walk',
+    #                         variants = varts)
+ 
+    #  sferes.create_variants(bld,
+    #                         source = 'scenarii/scenario_planning.cpp',
+    #                         use = 'sferes2',
+    #                         uselib = libs,
+    #                         target = 'scenario_planning',
+    #                         variants = varts)
  
  
  

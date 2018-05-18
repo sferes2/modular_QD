@@ -14,9 +14,9 @@ struct Standard
     typedef boost::shared_ptr<Phen> indiv_t;
     typedef typename std::vector<indiv_t> pop_t;
 
-    void operator()(const pop_t& offspring, const pop_t& parents) const
+    void operator()(pop_t& offspring, const pop_t& parents) const
     {
-        offspring.clear(); //CLEAR _offspring and _parents ONLY after Select, as it can be used by Select
+        offspring.clear();
 
 		// Generation of the offspring
 		std::vector<size_t> a;

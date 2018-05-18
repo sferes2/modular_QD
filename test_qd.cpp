@@ -84,20 +84,17 @@ struct Params
     };
     struct ea
     {
-        /*SFERES_CONST size_t res_x = 256;
-      SFERES_CONST size_t res_y = 256;*/
-
         SFERES_CONST size_t behav_dim = 2;
-        SFERES_ARRAY(size_t, behav_shape, 256, 256);
+        SFERES_ARRAY(size_t, behav_shape, 128, 128);
     };
     struct pop
     {
         // number of initial random points
-        SFERES_CONST size_t init_size = 1000;
+        SFERES_CONST size_t init_size = 100;
         // size of a batch
-        SFERES_CONST size_t size = 2000;
-        SFERES_CONST size_t nb_gen = 5001;
-        SFERES_CONST size_t dump_period = 1000;
+        SFERES_CONST size_t size = 200;
+        SFERES_CONST size_t nb_gen = 1001;
+        SFERES_CONST size_t dump_period = 200;
     };
     struct parameters
     {
@@ -146,7 +143,7 @@ BOOST_AUTO_TEST_CASE(quality_diversity)
     typedef selector::Random<phen_t> selector_t;
     typedef variator::Standard<phen_t, Params> variator_t;
     typedef container::Grid<phen_t, Params> container_t;
-    typedef updater::GridQD<container_t, phen_t, Params> updater_t;
+    typedef updater::GridQD<phen_t, Params> updater_t;
 
     typedef ea::QualityDiversity<phen_t, eval_t, stat_t, modifier_t, selector_t, variator_t, container_t, updater_t, Params> ea_t; //equivalent to MAP-Elites
 
