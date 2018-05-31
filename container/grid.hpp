@@ -43,11 +43,16 @@ public:
     return neigh;
   }
 
-  void get_full_content(std::vector<indiv_t> &content) const
+  void get_content(std::vector<indiv_t> &content) const
   {
     for (const indiv_t *i = _array.data(); i < (_array.data() + _array.num_elements()); ++i)
       if (*i)
         content.push_back(*i);
+  }
+
+  void optimize()
+  {
+    // do nothing
   }
 
   std::vector<bool> add(const pop_t &offspring, const pop_t &parents)
@@ -60,8 +65,8 @@ public:
     return added;
   }
 
-  // const array_t &archive() const { return _array; }
-  // const array_t &parents() const { return _array_parents; }
+  const array_t &archive() const { return _array; }
+  const array_t &parents() const { return _array_parents; }
   array_t &archive() { return _array; }
   array_t &parents() { return _array_parents; }
 

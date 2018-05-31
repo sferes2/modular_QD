@@ -102,7 +102,7 @@ class QualityDiversity : public ea::Ea<Phen, Eval, Stat, FitModifier, Params, ty
 		_updater(_container, _offspring, _offspring, _added);
 
 		this->_pop.clear();
-		_container.get_full_content(this->_pop);
+		_container.get_content(this->_pop);
 	}
 
 	// Main Iteration of the QD algorithm
@@ -126,7 +126,7 @@ class QualityDiversity : public ea::Ea<Phen, Eval, Stat, FitModifier, Params, ty
 
 		// Copy of the content of the container into the _pop object
 		this->_pop.clear();
-		_container.get_full_content(this->_pop);
+		_container.get_content(this->_pop); // Vassilis: this is not what happens with NSLC
 	}
 
 	const Container &container() const { return _container; }

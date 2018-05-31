@@ -9,7 +9,7 @@ namespace sferes
 {
 namespace updater
 {
-template <typename Phen, typename Params> 
+template <typename Phen, typename Params>
 class GridQD
 {
   public:
@@ -48,19 +48,19 @@ class GridQD
   protected:
     void _update_novelty(grid_t &grid) const
     {
-        tbb::parallel_for(tbb::blocked_range<indiv_t*>(grid.archive().data(), grid.archive().data() + grid.archive().num_elements()), Par_novelty(grid, this));
+        tbb::parallel_for(tbb::blocked_range<indiv_t *>(grid.archive().data(), grid.archive().data() + grid.archive().num_elements()), Par_novelty(grid, *this));
     }
 
     struct Par_novelty
     {
-        Par_novelty(const grid_t &grid, const GridQD * const updater) : _grid(grid), _updater(updater) {}
+        Par_novelty(const grid_t &grid, const GridQD &updater) : _grid(grid), _updater(updater) {}
         const grid_t &_grid;
-        const GridQD * const _updater;
-        void operator()(const tbb::blocked_range<indiv_t*> &r) const
+        const GridQD &_updater;
+        void operator()(const tbb::blocked_range<indiv_t *> &r) const
         {
             for (indiv_t *indiv = r.begin(); indiv != r.end(); ++indiv)
                 if (*indiv)
-                    _updater->_update_indiv(*indiv, _grid);
+                    _updater._update_indiv(*indiv, _grid);
         }
     };
 

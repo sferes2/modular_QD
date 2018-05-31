@@ -56,6 +56,8 @@
 #include "quality_diversity.hpp"
 #include "fit_qd.hpp"
 #include "stat.hpp"
+#include "selector.hpp"
+#include "container.hpp"
 #include "variator/standard.hpp"
 #include "updater/grid_qd.hpp"
 
@@ -144,6 +146,8 @@ BOOST_AUTO_TEST_CASE(quality_diversity)
     typedef variator::Standard<phen_t, Params> variator_t;
     typedef container::Grid<phen_t, Params> container_t;
     typedef updater::GridQD<phen_t, Params> updater_t;
+
+    typedef updater::UpdaterQD<phen_t, container_t, 
 
     typedef ea::QualityDiversity<phen_t, eval_t, stat_t, modifier_t, selector_t, variator_t, container_t, updater_t, Params> ea_t; //equivalent to MAP-Elites
 

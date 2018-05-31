@@ -9,7 +9,7 @@ namespace sferes
 namespace updater
 {
 template <typename Container, typename Phen, typename Params>
-struct Dummy
+struct DummyUpdater
 {
     typedef boost::shared_ptr<Phen> indiv_t;
     typedef typename std::vector<indiv_t> pop_t;

@@ -13,7 +13,7 @@ namespace container
 template <typename Phen, typename Params>
 class Archive
 {
-public:
+  public:
 	typedef boost::shared_ptr<Phen> indiv_t;
 	typedef typename std::vector<indiv_t> pop_t;
 	typedef typename pop_t::iterator it_t;
@@ -22,97 +22,38 @@ public:
 
 	Archive() {}
 
-	void erase_content()
-	{
-		_archive = Tree();
-	}
+	// void erase_content()
+	// {
+	// 	_archive = Tree();
+	// }
 
-	void get_full_content(std::vector<indiv_t> &content)
+	void get_content(std::vector<indiv_t> &content)
 	{
 		for (auto it = _archive.begin(); it != _archive.end(); it++)
 			content.push_back((*it).second);
 		//std::cout<<"full " <<(*i)->fit().novelty()<<std::endl;
 	}
 
-	bool add(indiv_t i1, indiv_t parent)
+	std::vector<indiv_t> get_neighbors(const indiv_t &indiv) const
 	{
-		//TODO
-		// update archive
-		if (i1->fit().dead())
-			return false;
-		if (_archive.size() == 0 || /*_archive.size()<Params::nov::k ||*/ _dist(get_nearest(i1, _archive, false)->fit().desc(), i1->fit().desc()) > Params::nov::l) //ADD because new
-		{
-			direct_add(i1);
-			return true;
-		}
-		else if (_archive.size() == 1) //there is only one indiv in the archive and the current one is too close
-		{
-			return false;
-		}
-		else //archive size min = 2
-		{
-			pop_t neigh_current;
-			get_knn(i1, _archive, 2, neigh_current, false);																												 //Be careful, the first one referes to nn
-			if (_dist(i1->fit().desc(), neigh_current[1]->fit().desc()) < (1 - Params::nov::eps) * Params::nov::l) //too close the second NN -- this works better
-																																																						 //if(_dist(i1->fit().desc(), neigh_current[1]->fit().desc())  < Params::nov::l)//too close the second NN
-			{
-				return false;
-			}
-			indiv_t nn = neigh_current[0];
-			std::vector<double> score_cur(2, 0), score_nn(2, 0);
-			score_cur[0] = i1->fit().value();
-			score_nn[0] = nn->fit().value();
-			//Compute the Novelty
-			neigh_current.clear();
-			if (_archive.size() < Params::nov::k + 1)
-			{
-				get_knn(i1, _archive, _archive.size(), neigh_current, false); //Be careful, the first one referes to nn
-			}
-			else
-			{
-				get_knn(i1, _archive, Params::nov::k + 1, neigh_current, false); //Be careful, the first one referes to nn
-			}
-			score_cur[1] = get_novelty(i1, neigh_current.begin()++, neigh_current.end());
-			score_nn[1] = get_novelty(nn, _archive);
-			//TEST
-			int score = 0;
-			if ((score_cur[0] >= (1 - sign(score_nn[0]) * Params::nov::eps) * score_nn[0] && score_cur[1] >= (1 - sign(score_nn[1]) * Params::nov::eps) * score_nn[1]) &&
-					((score_cur[0] - score_nn[0]) * std::abs(score_nn[1]) > -(score_cur[1] - score_nn[1]) * std::abs(score_nn[0]))) //add if significatively better on one objective
-			{
-				_replace(nn, i1);
-				return true;
-			}
-			//-------
-			//THIS WORKS as well but less
-			/*int score=0;     
-            
-	    if(score_cur[0] >= score_nn[0] && score_cur[1] >= (1-sign(score_nn[1])*Params::nov::eps)*score_nn[1] ) //not replacing something less efficient
-	      {
-		_replace(nn,i1);
-		return true;
-		}*/
-			//-------
-			// THIS WORKS--------  TO STAY IN THE ARCHIVE YOU NEED TO epsilon dominate! (kind of)
-			/*int score=0;
-	    for(int i =0;i<score_cur.size(); i++){
-	      if(score_cur[i] < (1-sign(score_nn[i])*Params::nov::eps)*score_nn[i] )
-	      return false;//nothing below the epsilon in one obj
-	      if(score_cur[i] >=score_nn[i] )
-		score++;
-	    }
-	    if(score>=1)//if better on at least 1 objective
-	      {
-		//std::cout<<"replace"<<std::endl;
-		_replace(nn,i1);
-		return true;
-	      }
-	    */
-			//---------------
-			else
-			{
-				return false;
-			}
-		}
+		std::vector<indiv_t> neigh;
+
+		return neigh;
+	}
+
+	std::vector<bool> add(const pop_t &offspring, const pop_t &parents)
+	{
+		std::vector<bool> added(offspring.size());
+
+		for (size_t i = 0; i < offspring.size(); ++i)
+			added[i] = _add(offspring[i], parents[i]);
+
+		return added;
+	}
+
+	void optimize()
+	{
+		_archive.optimize();
 	}
 
 	void update(pop_t &offspring, pop_t &parents)
@@ -125,6 +66,9 @@ public:
 		std::for_each(parents.begin(), parents.end(), nov);
 	}
 
+	const Tree &archive() const { return _archive; }
+
+  protected:
 	static indiv_t get_nearest(const indiv_t &indiv, const Tree &apop, const bool omit_query_point)
 	{
 		typename Tree::key_type q;
@@ -140,7 +84,7 @@ public:
 		// k nearest points
 		typedef typename Tree::knn_iterator knn_iterator_t;
 		std::pair<knn_iterator_t, knn_iterator_t>
-				range = apop.find_nearest_neighbors(q, k, omit_query_point);
+			range = apop.find_nearest_neighbors(q, k, omit_query_point);
 
 		nearest.clear();
 		for (knn_iterator_t it = range.first, end = range.second; it != end && nearest.size() < k; ++it)
@@ -189,8 +133,9 @@ public:
 			get_knn(indiv, apop, Params::nov::k, nearest, true); //here we omit because indivs are in the archive
 
 		return std::pair<double, double>(get_novelty(indiv, nearest.begin(), nearest.end()),
-																		 get_lq(indiv, nearest.begin(), nearest.end()));
+										 get_lq(indiv, nearest.begin(), nearest.end()));
 	}
+
 	static double get_lq(const indiv_t &indiv, typename pop_t::iterator begin, typename pop_t::iterator end)
 	{
 		if (std::distance(begin, end) > Params::nov::k)
@@ -215,10 +160,10 @@ public:
 
 		return count;
 	}
-
-	const Tree &archive() const { return _archive; }
-
-	void direct_add(const indiv_t &tobeinserted)
+	
+	// adds an individual in the archive if its descriptor does not exist in the archive
+	// (there isn't any other descriptor with the same values in the archive)
+	void _direct_add(const indiv_t &tobeinserted)
 	{
 		point_t p;
 		this->_behavior_to_point(tobeinserted->fit().desc(), &p);
@@ -229,14 +174,97 @@ public:
 		}
 	}
 
-protected:
+	// Vassilis: if we call get_knn with "omit_query_point=true" then it is simpler
+	bool _add(indiv_t i1, indiv_t parent)
+	{
+		//TODO
+		// update archive
+		if (i1->fit().dead())
+			return false;
+		if (_archive.size() == 0 || /*_archive.size()<Params::nov::k ||*/ _dist(get_nearest(i1, _archive, false)->fit().desc(), i1->fit().desc()) > Params::nov::l) //ADD because new
+		{
+			_direct_add(i1);
+			return true;
+		}
+		else if (_archive.size() == 1) //there is only one indiv in the archive and the current one is too close
+		{
+			return false;
+		}
+		else //archive size min = 2
+		{
+			pop_t neigh_current;
+			get_knn(i1, _archive, 2, neigh_current, false); //Be careful, the first one referes to nn
+			//too close the second NN -- this works better
+			if (_dist(i1->fit().desc(), neigh_current[1]->fit().desc()) < (1 - Params::nov::eps) * Params::nov::l)
+			//if(_dist(i1->fit().desc(), neigh_current[1]->fit().desc())  < Params::nov::l)//too close the second NN
+			{
+				return false;
+			}
+			indiv_t nn = neigh_current[0]; //Vassilis: I think here it should be neigh_current[1], since get_knn is called with "false"
+			std::vector<double> score_cur(2, 0), score_nn(2, 0);
+			score_cur[0] = i1->fit().value(); // Vassilis: this could be either positive or negative
+			score_nn[0] = nn->fit().value();
+			//Compute the Novelty
+			neigh_current.clear();
+			if (_archive.size() < Params::nov::k + 1)
+			{
+				get_knn(i1, _archive, _archive.size(), neigh_current, false); //Be careful, the first one referes to nn
+			}
+			else
+			{
+				get_knn(i1, _archive, Params::nov::k + 1, neigh_current, false); //Be careful, the first one referes to nn
+			}
+			// Vassilis: if we call get_knn with "omit_query_point=true" then we should omit the "++"
+			score_cur[1] = get_novelty(i1, neigh_current.begin()++, neigh_current.end());
+			score_nn[1] = get_novelty(nn, _archive);
+			//TEST
+			int score = 0;
+			if ((score_cur[0] >= (1 - sign(score_nn[0]) * Params::nov::eps) * score_nn[0] && score_cur[1] >= (1 - sign(score_nn[1]) * Params::nov::eps) * score_nn[1]) &&
+				((score_cur[0] - score_nn[0]) * std::abs(score_nn[1]) > -(score_cur[1] - score_nn[1]) * std::abs(score_nn[0]))) //add if significatively better on one objective
+			{
+				_replace(nn, i1);
+				return true;
+			}
+			//-------
+			//THIS WORKS as well but less
+			/*int score=0;     
+            
+			if(score_cur[0] >= score_nn[0] && score_cur[1] >= (1-sign(score_nn[1])*Params::nov::eps)*score_nn[1] ) //not replacing something less efficient
+			{
+			_replace(nn,i1);
+			return true;
+			}*/
+			//-------
+			// THIS WORKS--------  TO STAY IN THE ARCHIVE YOU NEED TO epsilon dominate! (kind of)
+			/*int score=0;
+			for(int i =0;i<score_cur.size(); i++){
+			if(score_cur[i] < (1-sign(score_nn[i])*Params::nov::eps)*score_nn[i] )
+			return false;//nothing below the epsilon in one obj
+			if(score_cur[i] >=score_nn[i] )
+			score++;
+			}
+			if(score>=1)//if better on at least 1 objective
+			{
+			//std::cout<<"replace"<<std::endl;
+			_replace(nn,i1);
+			return true;
+			}
+			*/
+			//---------------
+			else
+			{
+				return false;
+			}
+		}
+	}
+
 	void _replace(const indiv_t &toberemoved, const indiv_t &tobeinserted)
 	{
 		point_t remove;
 		this->_behavior_to_point(toberemoved->fit().desc(), &remove);
 		_archive.remove(remove);
 		//std::cout<<"problem remove"<<std::endl;
-		direct_add(tobeinserted);
+		_direct_add(tobeinserted);
 	}
 
 	template <typename Behavior, typename Point>
@@ -256,7 +284,6 @@ protected:
 		// use the Euclidean distance !
 		void operator()(indiv_t &indiv) const
 		{
-
 			if (indiv->fit().dead())
 			{
 				indiv->fit().set_novelty(-std::numeric_limits<double>::infinity());
