@@ -36,12 +36,12 @@ ln -s ../../../modular_QD ./
 The configuration of Sferes can then include the additional requirements for Modular_QD:
 ```
 cd -   #back to sferes root folder
-./waf configure --cpp11=yes --exp modular_QD
+./waf configure --cpp14=yes --exp modular_QD
 ```
 
 Experimental scenarios using the physical simulator Robdyn will need additional configurations, for instance:
 ```
-./waf configure --cpp11=yes --exp modular_QD --simu /location/of/simulation --robdyn /location/of/robdyn --controller /location/of/the/hexapod/controller
+./waf configure --cpp14=yes --exp modular_QD --simu /location/of/simulation --robdyn /location/of/robdyn --controller /location/of/the/hexapod/controller
 ```
 for more detail, please refer to these repositories:
 https://github.com/resibots/robdyn
