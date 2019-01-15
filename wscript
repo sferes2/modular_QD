@@ -107,7 +107,7 @@ def build(bld):
                             variants = varts)
  
 
-     if(conf.env.DEFINES_ROBDYN == 'USE_ROBDYN'):
+     if(bld.env.DEFINES_ROBDYN == 'USE_ROBDYN'):
          sferes.create_variants(bld,
                                 source = 'scenarii/scenario_hexa_turn.cpp',
                                 use = 'sferes2',
